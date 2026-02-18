@@ -1,0 +1,234 @@
+subinfo_fields:
+- name: subject_id
+  type: int
+  constraints:
+    min: 101
+    max: 999
+    digits: 3
+subinfo_mapping:
+  subject_id: 被试编号（3位）
+  Participant Information: 被试信息
+  registration_failed: 注册失败
+  registration_successful: 注册成功
+  invalid_input: '{field} 输入无效'
+window:
+  size:
+  - 1280
+  - 720
+  units: pix
+  screen: 0
+  bg_color: gray
+  fullscreen: false
+  monitor_width_cm: 35.5
+  monitor_distance_cm: 60
+task:
+  task_name: loss_aversion_framing
+  save_path: ./outputs/sim
+  total_blocks: 1
+  total_trials: 9
+  trial_per_block: 9
+  conditions:
+  - gain_frame
+  - loss_frame
+  - mixed_frame
+  key_list:
+  - f
+  - j
+  - space
+  seed_mode: same_across_sub
+  delta: 1
+  language: Chinese
+  voice_name: zh-CN-YunyangNeural
+  voice_enabled: false
+timing:
+  cue_duration: 0.5
+  anticipation_duration: 1.0
+  prefeedback_duration: 0.4
+  feedback_duration: 0.8
+stimuli:
+  fixation:
+    type: text
+    text: +
+    color: white
+    height: 48
+    font: SimHei
+  instruction_text:
+    type: text
+    text: '损失厌恶与框架任务
+
+
+      你将看到不同表述方式的决策方案。
+
+      F=接受当前方案，J=拒绝当前方案。
+
+
+      按空格键开始。'
+    color: white
+    height: 28
+    wrapWidth: 980
+    font: SimHei
+  gain_frame_cue:
+    type: text
+    text: 线索：收益框架
+    color: green
+    height: 44
+    wrapWidth: 900
+    font: SimHei
+  loss_frame_cue:
+    type: text
+    text: 线索：损失框架
+    color: red
+    height: 44
+    wrapWidth: 900
+    font: SimHei
+  mixed_frame_cue:
+    type: text
+    text: 线索：混合框架
+    color: yellow
+    height: 44
+    wrapWidth: 900
+    font: SimHei
+  gain_frame_target:
+    type: text
+    text: '你是否接受该方案？
+
+      F=接受   J=拒绝'
+    color: white
+    height: 54
+    wrapWidth: 900
+    font: SimHei
+  loss_frame_target:
+    type: text
+    text: '你是否接受该方案？
+
+      F=接受   J=拒绝'
+    color: white
+    height: 54
+    wrapWidth: 900
+    font: SimHei
+  mixed_frame_target:
+    type: text
+    text: '你是否接受该方案？
+
+      F=接受   J=拒绝'
+    color: white
+    height: 54
+    wrapWidth: 900
+    font: SimHei
+  gain_frame_hit_feedback:
+    type: text
+    text: 反应已记录
+    color: green
+    height: 42
+    font: SimHei
+  gain_frame_miss_feedback:
+    type: text
+    text: 未在时限内作答
+    color: red
+    height: 42
+    font: SimHei
+  loss_frame_hit_feedback:
+    type: text
+    text: 反应已记录
+    color: green
+    height: 42
+    font: SimHei
+  loss_frame_miss_feedback:
+    type: text
+    text: 未在时限内作答
+    color: red
+    height: 42
+    font: SimHei
+  mixed_frame_hit_feedback:
+    type: text
+    text: 反应已记录
+    color: green
+    height: 42
+    font: SimHei
+  mixed_frame_miss_feedback:
+    type: text
+    text: 未在时限内作答
+    color: red
+    height: 42
+    font: SimHei
+  block_break:
+    type: text
+    text: '区块 {block_num}/{total_blocks}
+
+      记录率：{accuracy:.2%}
+
+      当前分数：{total_score}
+
+
+      按空格键继续'
+    color: white
+    height: 24
+    wrapWidth: 900
+    font: SimHei
+  good_bye:
+    type: text
+    text: '任务结束，最终分数：{total_score}
+
+
+      按空格键退出'
+    color: white
+    height: 28
+    wrapWidth: 900
+    font: SimHei
+triggers:
+  map:
+    exp_onset: 1
+    exp_end: 2
+    block_onset: 10
+    block_end: 11
+    gain_frame_cue_onset: 20
+    loss_frame_cue_onset: 21
+    mixed_frame_cue_onset: 22
+    gain_frame_anti_onset: 30
+    loss_frame_anti_onset: 31
+    mixed_frame_anti_onset: 32
+    gain_frame_target_onset: 40
+    loss_frame_target_onset: 41
+    mixed_frame_target_onset: 42
+    gain_frame_key_press: 50
+    loss_frame_key_press: 51
+    mixed_frame_key_press: 52
+    gain_frame_no_response: 60
+    loss_frame_no_response: 61
+    mixed_frame_no_response: 62
+    gain_frame_hit_fb_onset: 70
+    gain_frame_miss_fb_onset: 71
+    loss_frame_hit_fb_onset: 72
+    loss_frame_miss_fb_onset: 73
+    mixed_frame_hit_fb_onset: 74
+    mixed_frame_miss_fb_onset: 75
+  driver:
+    type: serial_url
+    url: loop://
+    baudrate: 115200
+  timing:
+    post_delay_ms: 1
+  policy:
+    strict: false
+controller:
+  initial_duration: 0.25
+  min_duration: 0.08
+  max_duration: 0.4
+  step: 0.02
+  target_accuracy: 0.66
+  condition_specific: true
+  enable_logging: true
+sim:
+  output_dir: outputs/sim
+  seed: 0
+  participant_id: sim001
+  session_id: sub-sim001_task-loss_aversion_framing_seed0
+  log_path: outputs/sim/sub-sim001_task-loss_aversion_framing_seed0_sim_events.jsonl
+  policy: warn
+  default_rt_s: 0.2
+  clamp_rt: false
+  responder:
+    type: scripted
+    kwargs:
+      key: f
+      rt_s: 0.25
