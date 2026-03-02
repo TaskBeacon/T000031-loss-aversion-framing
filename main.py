@@ -1,4 +1,4 @@
-from functools import partial
+﻿from functools import partial
 from pathlib import Path
 
 import pandas as pd
@@ -24,8 +24,6 @@ from src import Controller, run_trial
 
 
 def _make_qa_trigger_runtime():
-    # In QA mode we don't want to hit real hardware.
-    # Trigger logging (planned/executed) is handled by TriggerRuntime.
     return initialize_triggers(mock=True)
 
 
@@ -46,6 +44,50 @@ def _parse_args(task_root: Path) -> TaskRunOptions:
     )
 
 
+def _as_bool(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def _as_float(value) -> float | None:
+    try:
+        return float(value)
+    except Exception:
+        return None
+
+
+def _summarize_trials(trials: list[dict]) -> tuple[float, float, int]:
+    if not trials:
+        return 0.0, 0.0, 0
+
+    timeout_count = sum(1 for row in trials if _as_bool(row.get("timed_out", False)))
+    responded = [row for row in trials if not _as_bool(row.get("timed_out", False))]
+    gamble_count = sum(1 for row in responded if _as_bool(row.get("chose_gamble", False)))
+    gamble_rate = (gamble_count / len(responded)) if responded else 0.0
+
+    rt_values = []
+    for row in responded:
+        rt = _as_float(row.get("rt_s", None))
+        if rt is not None:
+            rt_values.append(rt)
+    mean_rt_ms = (sum(rt_values) / len(rt_values) * 1000.0) if rt_values else 0.0
+    return gamble_rate, mean_rt_ms, timeout_count
+
+
+def _condition_gamble_rates(trials: list[dict]) -> dict[str, float]:
+    conds = ("gain_frame", "loss_frame", "mixed_frame")
+    out = {cond: 0.0 for cond in conds}
+    for cond in conds:
+        rows = [r for r in trials if str(r.get("condition", "")) == cond and not _as_bool(r.get("timed_out", False))]
+        if not rows:
+            out[cond] = 0.0
+            continue
+        g = sum(1 for r in rows if _as_bool(r.get("chose_gamble", False)))
+        out[cond] = g / len(rows)
+    return out
+
+
 def run(options: TaskRunOptions):
     task_root = Path(__file__).resolve().parent
     cfg = load_config(str(options.config_path))
@@ -64,7 +106,6 @@ def run(options: TaskRunOptions):
 
 
 def _run_impl(*, mode: str, output_dir: Path | None, cfg: dict, participant_id: str):
-    # 2. Collect subject info (skip GUI in QA mode)
     if mode == "qa":
         subject_data = {"subject_id": "qa"}
     elif mode == "sim":
@@ -73,44 +114,37 @@ def _run_impl(*, mode: str, output_dir: Path | None, cfg: dict, participant_id: 
         subform = SubInfo(cfg["subform_config"])
         subject_data = subform.collect()
 
-    # 3. Load task settings
     settings = TaskSettings.from_dict(cfg["task_config"])
     if mode in ("qa", "sim") and output_dir is not None:
         settings.save_path = str(output_dir)
 
     settings.add_subinfo(subject_data)
 
-    # In QA mode, force deterministic artifact locations.
     if mode == "qa" and output_dir is not None:
         output_dir.mkdir(parents=True, exist_ok=True)
         settings.res_file = str(output_dir / "qa_trace.csv")
         settings.log_file = str(output_dir / "qa_psychopy.log")
         settings.json_file = str(output_dir / "qa_settings.json")
 
-    # 4. Setup triggers (mock in QA)
     settings.triggers = cfg["trigger_config"]
     if mode in ("qa", "sim"):
         trigger_runtime = _make_qa_trigger_runtime()
     else:
         trigger_runtime = initialize_triggers(cfg)
 
-    # 5. Set up window & input
     win, kb = initialize_exp(settings)
 
-    # 6. Setup stimulus bank (skip TTS/voice conversion in QA)
     stim_bank = StimBank(win, cfg["stim_config"])
     if mode not in ("qa", "sim"):
         stim_bank = stim_bank.convert_to_voice("instruction_text")
     stim_bank = stim_bank.preload_all()
 
-    # 7. Setup controller across blocks
     settings.controller = cfg["controller_config"]
     settings.save_to_json()
     controller = Controller.from_dict(settings.controller)
 
     trigger_runtime.send(settings.triggers.get("exp_onset"))
 
-    # Instruction
     instr = StimUnit("instruction_text", win, kb, runtime=trigger_runtime).add_stim(
         stim_bank.get("instruction_text")
     )
@@ -118,9 +152,10 @@ def _run_impl(*, mode: str, output_dir: Path | None, cfg: dict, participant_id: 
         instr.add_stim(stim_bank.get("instruction_text_voice"))
     instr.wait_and_continue()
 
-    all_data = []
-    for block_i in range(settings.total_blocks):
-        # 8. setup block
+    all_data: list[dict] = []
+    total_blocks = int(getattr(settings, "total_blocks", 1))
+    for block_i in range(total_blocks):
+        controller.start_block(block_i)
         if mode not in ("qa", "sim"):
             count_down(win, 3, color="black")
 
@@ -132,49 +167,56 @@ def _run_impl(*, mode: str, output_dir: Path | None, cfg: dict, participant_id: 
                 window=win,
                 keyboard=kb,
             )
-                .generate_conditions()
-                .on_start(lambda b: trigger_runtime.send(settings.triggers.get("block_onset")))
-                .on_end(lambda b: trigger_runtime.send(settings.triggers.get("block_end")))
-                .run_trial(
-                    partial(
-                        run_trial,
-                        stim_bank=stim_bank,
-                        controller=controller,
-                        trigger_runtime=trigger_runtime,
-                        block_id=f"block_{block_i}",
-                        block_idx=block_i,
-                    )
+            .generate_conditions()
+            .on_start(lambda b: trigger_runtime.send(settings.triggers.get("block_onset")))
+            .on_end(lambda b: trigger_runtime.send(settings.triggers.get("block_end")))
+            .run_trial(
+                partial(
+                    run_trial,
+                    stim_bank=stim_bank,
+                    controller=controller,
+                    trigger_runtime=trigger_runtime,
+                    block_id=f"block_{block_i}",
+                    block_idx=block_i,
                 )
-                .to_dict(all_data)
             )
+            .to_dict(all_data)
+        )
 
         block_trials = block.get_all_data()
+        block_gamble_rate, block_rt_ms, block_timeouts = _summarize_trials(block_trials)
+        if block_i < (total_blocks - 1):
+            StimUnit("block", win, kb, runtime=trigger_runtime).add_stim(
+                stim_bank.get_and_format(
+                    "block_break",
+                    block_num=block_i + 1,
+                    total_blocks=total_blocks,
+                    block_gamble_rate=block_gamble_rate,
+                    mean_rt_ms=block_rt_ms,
+                    timeout_count=block_timeouts,
+                )
+            ).wait_and_continue()
 
-        # Calculate for the block feedback
-        hit_rate = sum(trial.get("target_hit", False) for trial in block_trials) / len(block_trials)
-        total_score = sum(trial.get("feedback_delta", 0) for trial in block_trials)
-        StimUnit("block", win, kb, runtime=trigger_runtime).add_stim(
-            stim_bank.get_and_format(
-                "block_break",
-                block_num=block_i + 1,
-                total_blocks=settings.total_blocks,
-                accuracy=hit_rate,
-                total_score=total_score,
-            )
-        ).wait_and_continue()
+    overall_gamble_rate, overall_rt_ms, overall_timeouts = _summarize_trials(all_data)
+    cond_rates = _condition_gamble_rates(all_data)
 
-    final_score = sum(trial.get("feedback_delta", 0) for trial in all_data)
     StimUnit("goodbye", win, kb, runtime=trigger_runtime).add_stim(
-        stim_bank.get_and_format("good_bye", total_score=final_score)
+        stim_bank.get_and_format(
+            "good_bye",
+            total_trials=len(all_data),
+            overall_gamble_rate=overall_gamble_rate,
+            mean_rt_ms=overall_rt_ms,
+            timeout_count=overall_timeouts,
+            gain_rate=cond_rates.get("gain_frame", 0.0),
+            loss_rate=cond_rates.get("loss_frame", 0.0),
+            mixed_rate=cond_rates.get("mixed_frame", 0.0),
+        )
     ).wait_and_continue(terminate=True)
 
     trigger_runtime.send(settings.triggers.get("exp_end"))
 
-    # 9. Save data
-    df = pd.DataFrame(all_data)
-    df.to_csv(settings.res_file, index=False)
+    pd.DataFrame(all_data).to_csv(settings.res_file, index=False)
 
-    # 10. Close everything
     trigger_runtime.close()
     core.quit()
 

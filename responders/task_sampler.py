@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
@@ -9,21 +9,18 @@ from psyflow.sim.contracts import Action, Feedback, Observation, SessionInfo
 
 @dataclass
 class TaskSamplerResponder:
-    """Generic task sampler responder.
+    """Sampler responder for framing-choice trials."""
 
-    - Always provides a continue response for non-target phases when possible.
-    - Uses `hit_rate` on target phases to produce hits/misses.
-    """
-
-    key: str | None = "space"
-    hit_rate: float = 0.7
-    rt_mean_s: float = 0.28
-    rt_sd_s: float = 0.05
-    rt_min_s: float = 0.12
+    gamble_rate: float = 0.45
+    miss_rate: float = 0.12
+    rt_mean_s: float = 0.6
+    rt_sd_s: float = 0.12
+    rt_min_s: float = 0.2
 
     def __post_init__(self) -> None:
         self._rng: Any = None
-        self.hit_rate = max(0.0, min(1.0, float(self.hit_rate)))
+        self.gamble_rate = max(0.0, min(1.0, float(self.gamble_rate)))
+        self.miss_rate = max(0.0, min(1.0, float(self.miss_rate)))
         self.rt_mean_s = float(self.rt_mean_s)
         self.rt_sd_s = max(1e-6, float(self.rt_sd_s))
         self.rt_min_s = max(0.0, float(self.rt_min_s))
@@ -58,14 +55,32 @@ class TaskSamplerResponder:
         if rng is None:
             return Action(key=None, rt_s=None, meta={"source": "task_sampler", "reason": "rng_missing"})
 
-        chosen_key = self.key if self.key in valid_keys else valid_keys[0]
         phase = str(obs.phase or "")
+        if phase != "decision":
+            key = "space" if "space" in valid_keys else valid_keys[0]
+            rt = max(self.rt_min_s, self._sample_normal(self.rt_mean_s, self.rt_sd_s))
+            return Action(key=key, rt_s=rt, meta={"source": "task_sampler", "phase": phase, "outcome": "continue"})
+
+        if self._sample_random() < self.miss_rate:
+            return Action(key=None, rt_s=None, meta={"source": "task_sampler", "outcome": "timeout"})
+
+        factors = dict(obs.task_factors or {})
+        safe_key = str(factors.get("safe_key", "")).strip().lower()
+        gamble_key = str(factors.get("gamble_key", "")).strip().lower()
+
+        if safe_key not in valid_keys:
+            safe_key = valid_keys[0]
+        if gamble_key not in valid_keys:
+            gamble_key = valid_keys[-1] if len(valid_keys) > 1 else safe_key
+
+        choose_gamble = self._sample_random() < self.gamble_rate
+        chosen = gamble_key if choose_gamble else safe_key
         rt = max(self.rt_min_s, self._sample_normal(self.rt_mean_s, self.rt_sd_s))
-
-        if phase != "target":
-            return Action(key=chosen_key, rt_s=rt, meta={"source": "task_sampler", "phase": phase, "outcome": "continue"})
-
-        if self._sample_random() > self.hit_rate:
-            return Action(key=None, rt_s=None, meta={"source": "task_sampler", "outcome": "miss"})
-
-        return Action(key=chosen_key, rt_s=rt, meta={"source": "task_sampler", "outcome": "hit"})
+        return Action(
+            key=chosen,
+            rt_s=rt,
+            meta={
+                "source": "task_sampler",
+                "outcome": "choose_gamble" if choose_gamble else "choose_safe",
+            },
+        )

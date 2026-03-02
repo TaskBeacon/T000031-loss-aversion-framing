@@ -1,67 +1,46 @@
-task_id: T000031
-generated_at: '2026-02-18T17:01:56Z'
+﻿task_id: T000031
+generated_at: '2026-02-19T12:10:00Z'
 selection_policy: openalex_filter_plus_manual_curation
 citation_threshold: 100
 papers:
-- id: W1989005086
-  title: 'Anomalies: Risk Aversion'
+- id: W3024532045
+  title: Replicating patterns of prospect theory for decision under risk
   authors:
-  - Matthew Rabin
-  - Richard H. Thaler
-  year: 2001
-  journal: The Journal of Economic Perspectives
-  doi_or_url: https://doi.org/10.1257/jep.15.1.219
-  citation_count: 958
+  - Kai Ruggeri
+  - Sonia Alì
+  - Mari Louise Berge
+  - Giulia Bertoldo
+  - Ludvig Daae Bjørndal
+  - Anna Cortijos-Bernabeu
+  year: 2020
+  journal: Nature Human Behaviour
+  doi_or_url: https://doi.org/10.1038/s41562-020-0886-x
+  citation_count: 309
+  is_high_impact: true
+  open_access: true
+  used_for:
+  - task_workflow
+  - stimulus_design
+  - condition_logic
+  parameter_bindings: {}
+  notes: Multi-country replication of prospect-theory patterns under risky choice.
+- id: W2140619986
+  title: Salience Theory of Choice Under Risk
+  authors:
+  - Pedro Bordalo
+  - Nicola Gennaioli
+  - Andrei Shleifer
+  year: 2012
+  journal: The Quarterly Journal of Economics
+  doi_or_url: https://doi.org/10.1093/qje/qjs018
+  citation_count: 1262
   is_high_impact: false
   open_access: true
   used_for:
   - task_workflow
-  - timing_parameters
+  - choice_architecture
   parameter_bindings: {}
-  notes: ''
-- id: W2014156217
-  title: The arcuate nucleus mediates GLP-1 receptor agonist liraglutide-dependent
-    weight loss
-  authors:
-  - Anna Secher
-  - Jacob Jelsing
-  - Arian F. Baquero
-  - Jacob Hecksher‐Sørensen
-  - Michael A. Cowley
-  - Louise S. Dalbøge
-  - Gitte Hansen
-  - Kevin L. Grove
-  - Charles Pyke
-  - Kirsten Raun
-  - Lauge Schäffer
-  - Mads Tang‐Christensen
-  year: 2014
-  journal: Journal of Clinical Investigation
-  doi_or_url: https://doi.org/10.1172/jci75276
-  citation_count: 881
-  is_high_impact: false
-  open_access: true
-  used_for:
-  - task_workflow
-  - timing_parameters
-  parameter_bindings: {}
-  notes: ''
-- id: W1986362596
-  title: Risk Aversion and Incentive Effects
-  authors:
-  - Charles A. Holt
-  - Susan K. Laury
-  year: 2002
-  journal: SSRN Electronic Journal
-  doi_or_url: https://doi.org/10.2139/ssrn.893797
-  citation_count: 563
-  is_high_impact: false
-  open_access: true
-  used_for:
-  - task_workflow
-  - timing_parameters
-  parameter_bindings: {}
-  notes: ''
+  notes: Supports explicit sure-vs-risk option presentation for decision tasks.
 - id: W2043214237
   title: Differential Encoding of Losses and Gains in the Human Striatum
   authors:
@@ -77,53 +56,42 @@ papers:
   is_high_impact: false
   open_access: true
   used_for:
-  - task_workflow
-  - timing_parameters
+  - gain_loss_contrast
+  - trigger_planning
   parameter_bindings: {}
-  notes: ''
-- id: W2092350133
-  title: Neural Correlates of Value, Risk, and Risk Aversion Contributing to Decision
-    Making under Risk
+  notes: Reinforces gain-vs-loss contrast as a core analysis axis.
+- id: W2013390773
+  title: Brain correlates of risky decision-making
   authors:
-  - George I. Christopoulos
-  - Philippe N. Tobler
-  - Peter Bossaerts
-  - Raymond J. Dolan
-  - Wolfram Schultz
+  - David Polezzi
+  - Giuseppe Sartori
+  - Rino Rumiati
+  - Giulio Vidotto
+  - Irene Daum
   year: 2009
-  journal: Journal of Neuroscience
-  doi_or_url: https://doi.org/10.1523/jneurosci.2614-09.2009
-  citation_count: 452
-  is_high_impact: false
-  open_access: true
-  used_for:
-  - task_workflow
-  - timing_parameters
-  parameter_bindings: {}
-  notes: ''
-- id: W2985923507
-  title: Variability in the analysis of a single neuroimaging dataset by many teams
-  authors:
-  - Rotem Botvinik‐Nezer
-  - Felix Holzmeister
-  - Colin F. Camerer
-  - Anna Dreber
-  - Jürgen Huber
-  - Magnus Johannesson
-  - Michael Kirchler
-  - Roni Iwanir
-  - Jeanette A. Mumford
-  - R. Alison Adcock
-  - Paolo Avesani
-  - Błażej M. Bączkowski
-  year: 2020
-  journal: Nature
-  doi_or_url: https://doi.org/10.1038/s41586-020-2314-9
-  citation_count: 1151
+  journal: NeuroImage
+  doi_or_url: https://doi.org/10.1016/j.neuroimage.2009.08.068
+  citation_count: 163
   is_high_impact: true
   open_access: true
   used_for:
-  - task_workflow
   - timing_parameters
+  - rt_measurement
   parameter_bindings: {}
-  notes: ''
+  notes: Supports bounded decision windows and reaction-time analysis in risky choice.
+- id: W4313429369
+  title: 'On the descriptive value of loss aversion in decisions under risk: Six clarifications'
+  authors:
+  - Eyal Ert
+  - Ido Erev
+  year: 2013
+  journal: Judgment and Decision Making
+  doi_or_url: https://doi.org/10.1017/s1930297500005945
+  citation_count: 137
+  is_high_impact: false
+  open_access: true
+  used_for:
+  - mixed_gamble_logic
+  - interpretation_notes
+  parameter_bindings: {}
+  notes: Grounds mixed gain-loss gamble interpretation and analysis cautions.

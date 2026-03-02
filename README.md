@@ -1,13 +1,13 @@
-# Loss Aversion / Framing Task
+﻿# Loss Aversion / Framing Task
 
 ![Maturity: draft](https://img.shields.io/badge/Maturity-draft-64748b?style=flat-square&labelColor=111827)
 
 | Field | Value |
 |---|---|
 | Name | Loss Aversion / Framing Task |
-| Version | v0.1.1-dev |
+| Version | v0.1.2-dev |
 | URL / Repository | https://github.com/TaskBeacon/T000031-loss-aversion-framing |
-| Short Description | Prospect-theory style framing and loss-aversion choices. |
+| Short Description | Sure-vs-risk decision task with gain, loss, and mixed framing conditions. |
 | Created By | TaskBeacon |
 | Date Updated | 2026-02-19 |
 | PsyFlow Version | 0.1.9 |
@@ -18,9 +18,13 @@
 
 ## 1. Task Overview
 
-This task implements a framing-based choice paradigm with `gain_frame`, `loss_frame`, and `mixed_frame` conditions. Each trial includes cue, anticipation, target response capture, and outcome feedback.
+This task implements a risk-choice paradigm with three conditions:
 
-The implementation is organized for standardized execution and logging across human, QA, scripted sim, and sampler sim modes.
+- `gain_frame`: sure keep amount vs risky keep-all/keep-none option.
+- `loss_frame`: sure loss amount vs risky full-loss/no-loss option.
+- `mixed_frame`: sure amount vs mixed gain-loss lottery.
+
+Each trial records choice, response latency, timeout status, and offer-level expected value metadata. Participant-facing text is Chinese and rendered with `SimHei`.
 
 ## 2. Task Flow
 
@@ -28,35 +32,36 @@ The implementation is organized for standardized execution and logging across hu
 
 | Step | Description |
 |---|---|
-| 1. Prepare schedule | Frame condition schedule is loaded for each block. |
-| 2. Execute trials | `run_trial(...)` runs cue, anticipation, target, and feedback stages. |
-| 3. Block summary | Accuracy and cumulative score are shown. |
-| 4. End summary | Final total score is shown at task completion. |
+| 1. Block init | `Controller.start_block(block_i)` resets block metrics. |
+| 2. Trial execution | `BlockUnit.run_trial(...)` runs one decision trial per schedule row. |
+| 3. Block summary | Show block gamble rate, mean RT, and timeout count (except last block). |
+| 4. Final summary | Show full-task gamble/RT metrics and condition-specific gamble rates. |
 
 ### Trial-Level Flow
 
 | Step | Description |
 |---|---|
-| Cue | Frame-specific cue is shown. |
-| Anticipation | Fixation stage before target response window. |
-| Target | Condition target appears and response is captured. |
-| Pre-feedback fixation | Brief fixation transition stage. |
-| Feedback | Hit/miss feedback and score delta are shown. |
+| `fixation` | Present `+` for jittered fixation duration. |
+| `decision` | Present framing label + scenario + safe/risky options; capture `f/j` response within deadline. |
+| `feedback` | Show choice feedback or timeout feedback. |
+| `iti` | Present jittered inter-trial fixation before next trial. |
 
 ### Controller Logic
 
 | Component | Description |
 |---|---|
-| Adaptive timing | Controller tunes target duration around target accuracy. |
-| Condition tracking | Performance history is tracked per frame condition. |
-| Score update | Trial outcome updates running score. |
+| Offer sampling | Samples one offer from condition-specific banks (`gain_trials`, `loss_trials`, `mixed_trials`). |
+| Metrics update | Updates block/session gamble rate, timeout rate, and mean RT. |
+| Condition stats | Tracks per-condition block and total metrics for reporting. |
 
 ### Runtime Context Phases
 
 | Phase Label | Meaning |
 |---|---|
-| `anticipation` | Pre-target response-monitoring interval. |
-| `target` | Main target-response interval. |
+| `fixation` | Pre-decision baseline display. |
+| `decision` | Active choice window with valid keys. |
+| `feedback` | Post-choice or timeout acknowledgement. |
+| `iti` | Inter-trial reset period. |
 
 ## 3. Configuration Summary
 
@@ -80,27 +85,51 @@ The implementation is organized for standardized execution and logging across hu
 
 ### c. Stimuli
 
-| Name | Type | Description |
-|---|---|---|
-| `*_cue` | text | Frame-specific cue prompts. |
-| `*_target` | text | Frame condition targets used for response capture. |
-| `*_hit_feedback`, `*_miss_feedback` | text | Condition-specific feedback displays. |
-| `fixation`, `block_break`, `good_bye` | text | Shared fixation and summary displays. |
+| Stimulus Group | Description |
+|---|---|
+| `instruction_text` | Task instructions and key mapping. |
+| `frame_label`, `scenario_text` | Condition label and scenario prompt. |
+| `safe_option_text`, `gamble_option_text` | Left/right choice options shown simultaneously. |
+| `key_hint` | On-screen reminder of safe/gamble key mapping. |
+| `feedback_choice`, `feedback_timeout` | Response-dependent feedback text. |
+| `fixation`, `block_break`, `good_bye` | Shared fixation and summary screens. |
 
 ### d. Timing
 
-| Phase | Duration |
+| Stage | Duration |
 |---|---|
-| cue | 0.5 s |
-| anticipation | 1.0 s |
-| prefeedback | 0.4 s |
-| feedback | 0.8 s |
-| target | adaptive via controller (`0.08`-`0.40` s bounds) |
+| fixation | jittered (`fixation_duration`) |
+| decision | fixed deadline (`decision_deadline`) |
+| feedback | fixed (`feedback_duration`) |
+| iti | jittered (`iti_duration`) |
+
+### e. Trigger Map
+
+| Trigger | Code |
+|---|---:|
+| `exp_onset` | 1 |
+| `exp_end` | 2 |
+| `block_onset` | 10 |
+| `block_end` | 11 |
+| `fixation_onset` | 20 |
+| `decision_onset` | 30 |
+| `choice_safe` | 31 |
+| `choice_gamble` | 32 |
+| `choice_timeout` | 33 |
+| `feedback_onset` | 40 |
+| `iti_onset` | 50 |
+
+### f. Controller Parameters
+
+| Parameter Group | Description |
+|---|---|
+| `gain_trials` | Sure keep vs probabilistic keep-all offers. |
+| `loss_trials` | Sure loss vs probabilistic full-loss offers. |
+| `mixed_trials` | Sure amount vs mixed gain/loss lotteries. |
+| `enable_logging` | Emits per-trial controller metrics to PsychoPy data log. |
 
 ## 4. Methods (for academic publication)
 
-Participants completed framed choice trials designed to probe valuation asymmetries across gain, loss, and mixed contexts. Each trial included frame cueing, response-window target presentation, and immediate trial feedback.
+Participants performed a repeated risky-choice task under gain, loss, and mixed-outcome framing. On each trial they selected between a sure option and a gamble option using a two-key response mapping, under a bounded decision window. Trial-structured logs captured condition identity, offer parameters, expected-value fields, response choice, reaction time, and timeout events.
 
-A controller maintained bounded adaptive timing based on recent response outcomes. Trial-level data capture included condition identity, response success, response timing, and score updates.
-
-Trigger emissions were defined for all major trial stages to support synchronized recording and reproducible QA validation.
+The implementation uses explicit phase instrumentation (`fixation`, `decision`, `feedback`, `iti`) with trigger-aligned event logging to support reproducible QA and downstream behavioral analysis of framing-dependent risk preference.

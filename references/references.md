@@ -1,7 +1,7 @@
-# References
+﻿# References
 
 - Task ID: `T000031`
-- Generated at: `2026-02-18T17:01:56Z`
+- Generated at: `2026-02-19T12:10:00Z`
 - Selection policy: `openalex_filter_plus_manual_curation`
 - Citation threshold: `100`
 
@@ -9,14 +9,14 @@
 
 | ID | Year | Citations | Journal | High Impact | Title |
 |---|---:|---:|---|---|---|
-| W1989005086 | 2001 | 958 | The Journal of Economic Perspectives | no | Anomalies: Risk Aversion |
-| W2014156217 | 2014 | 881 | Journal of Clinical Investigation | no | The arcuate nucleus mediates GLP-1 receptor agonist liraglutide-dependent weight loss |
-| W1986362596 | 2002 | 563 | SSRN Electronic Journal | no | Risk Aversion and Incentive Effects |
+| W3024532045 | 2020 | 309 | Nature Human Behaviour | yes | Replicating patterns of prospect theory for decision under risk |
+| W2140619986 | 2012 | 1262 | The Quarterly Journal of Economics | no | Salience Theory of Choice Under Risk |
 | W2043214237 | 2007 | 466 | Journal of Neuroscience | no | Differential Encoding of Losses and Gains in the Human Striatum |
-| W2092350133 | 2009 | 452 | Journal of Neuroscience | no | Neural Correlates of Value, Risk, and Risk Aversion Contributing to Decision Making under Risk |
-| W2985923507 | 2020 | 1151 | Nature | yes | Variability in the analysis of a single neuroimaging dataset by many teams |
+| W2013390773 | 2009 | 163 | NeuroImage | yes | Brain correlates of risky decision-making |
+| W4313429369 | 2013 | 137 | Judgment and Decision Making | no | On the descriptive value of loss aversion in decisions under risk: Six clarifications |
 
 ## Notes
 
-- Paywalled papers were skipped by policy.
-- Any unresolved protocol values are documented as `inferred` in `parameter_mapping.md`.
+- The selected set keeps only task-relevant open-access papers with citation count >= 100.
+- At least one high-impact journal source is included (`Nature Human Behaviour`, `NeuroImage`).
+- Parameter-level uncertainties are explicitly marked as `inferred` in `parameter_mapping.md`.

@@ -1,13 +1,13 @@
-# Stimulus Mapping
+﻿# Stimulus Mapping
 
 Task: `Loss Aversion / Framing Task`
 
 | Condition | Implemented Stimulus IDs | Source Paper ID | Evidence (quote/figure/table) | Implementation Mode | Notes |
 |---|---|---|---|---|---|
-| `gain_frame` | `gain_frame_cue`, `gain_frame_target`, `gain_frame_hit_feedback`, `gain_frame_miss_feedback`, `fixation` | `W1989005086` | Condition-specific trial flow and outcome/response mapping described in selected paradigm references. | `psychopy_builtin` | Condition row resolved against current `config/config.yaml` stimuli and `src/run_trial.py` phase logic. |
-| `loss_frame` | `loss_frame_cue`, `loss_frame_target`, `loss_frame_hit_feedback`, `loss_frame_miss_feedback`, `fixation` | `W1989005086` | Condition-specific trial flow and outcome/response mapping described in selected paradigm references. | `psychopy_builtin` | Condition row resolved against current `config/config.yaml` stimuli and `src/run_trial.py` phase logic. |
-| `mixed_frame` | `mixed_frame_cue`, `mixed_frame_target`, `mixed_frame_hit_feedback`, `mixed_frame_miss_feedback`, `fixation` | `W1989005086` | Condition-specific trial flow and outcome/response mapping described in selected paradigm references. | `psychopy_builtin` | Condition row resolved against current `config/config.yaml` stimuli and `src/run_trial.py` phase logic. |
-| `all_conditions` | `instruction_text`, `block_break`, `good_bye`, `fixation` | `W1989005086` | Shared instruction, transition, and fixation assets support the common task envelope across all conditions. | `psychopy_builtin` | Shared assets are condition-agnostic and used in every run mode. |
+| `gain_frame` | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint`, `feedback_choice`, `feedback_timeout`, `fixation` | `W3024532045` | Risk decisions under gain framing are implemented as sure-vs-gamble options with explicit probabilities/outcomes. | `psychopy_builtin` | Left/right option layout is fixed; content values are trial-formatted from controller offer banks. |
+| `loss_frame` | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint`, `feedback_choice`, `feedback_timeout`, `fixation` | `W3024532045` | Loss framing is implemented as sure loss versus probabilistic larger loss/no-loss alternatives. | `psychopy_builtin` | Condition-specific text is generated per trial using sampled loss offers. |
+| `mixed_frame` | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint`, `feedback_choice`, `feedback_timeout`, `fixation` | `W4313429369` | Mixed gain/loss lotteries are implemented against a sure baseline option to capture loss-aversion tendency. | `psychopy_builtin` | Mixed trials include both positive and negative outcomes in one gamble option. |
+| `all_conditions` | `instruction_text`, `block_break`, `good_bye` | `W2140619986` | Shared instructions and summary screens provide a stable decision-task envelope across conditions. | `psychopy_builtin` | Participant-facing Chinese text and SimHei font are consistent across modes. |
 
 Implementation mode legend:
 - `psychopy_builtin`: stimulus rendered via PsychoPy primitives in config.

@@ -1,20 +1,18 @@
-subinfo_fields:
-- name: subject_id
-  type: int
-  constraints:
-    min: 101
-    max: 999
-    digits: 3
+﻿subinfo_fields:
+  - name: subject_id
+    type: int
+    constraints:
+      min: 101
+      max: 999
+      digits: 3
 subinfo_mapping:
-  subject_id: 被试编号（3位）
+  subject_id: 受试者编号（3位）
   Participant Information: 被试信息
   registration_failed: 注册失败
   registration_successful: 注册成功
-  invalid_input: '{field} 输入无效'
+  invalid_input: "{field} 输入无效"
 window:
-  size:
-  - 1280
-  - 720
+  size: [1280, 720]
   units: pix
   screen: 0
   bg_color: gray
@@ -23,157 +21,143 @@ window:
   monitor_distance_cm: 60
 task:
   task_name: loss_aversion_framing
+  delta: 1
   save_path: ./outputs/human
   total_blocks: 3
-  total_trials: 72
-  trial_per_block: 24
+  total_trials: 96
+  trial_per_block: 32
   conditions:
-  - gain_frame
-  - loss_frame
-  - mixed_frame
+    - gain_frame
+    - loss_frame
+    - mixed_frame
   key_list:
-  - f
-  - j
-  - space
+    - f
+    - j
+    - space
+  safe_key: f
+  gamble_key: j
   seed_mode: same_across_sub
-  delta: 1
   language: Chinese
   voice_name: zh-CN-YunyangNeural
   voice_enabled: false
 timing:
-  cue_duration: 0.5
-  anticipation_duration: 1.0
-  prefeedback_duration: 0.4
-  feedback_duration: 0.8
+  fixation_duration: [0.4, 0.7]
+  decision_deadline: 4.0
+  feedback_duration: 0.7
+  iti_duration: [0.4, 0.8]
 stimuli:
-  fixation:
-    type: text
-    text: +
-    color: white
-    height: 48
-    font: SimHei
   instruction_text:
     type: text
-    text: '损失厌恶与框架任务
+    text: |
+      损失厌恶与框架任务
 
+      每一试次你会看到两个方案：
+      方案A（确定）与方案B（风险）。
 
-      你将看到不同表述方式的决策方案。
+      按 F 选择方案A，按 J 选择方案B。
+      请尽量根据直觉做出选择。
 
-      F=接受当前方案，J=拒绝当前方案。
-
-
-      按空格键开始。'
+      按空格键开始。
     color: white
     height: 28
     wrapWidth: 980
+    pos: [0, 80]
     font: SimHei
-  gain_frame_cue:
+  fixation:
     type: text
-    text: 线索：收益框架
-    color: green
-    height: 44
-    wrapWidth: 900
-    font: SimHei
-  loss_frame_cue:
-    type: text
-    text: 线索：损失框架
-    color: red
-    height: 44
-    wrapWidth: 900
-    font: SimHei
-  mixed_frame_cue:
-    type: text
-    text: 线索：混合框架
-    color: yellow
-    height: 44
-    wrapWidth: 900
-    font: SimHei
-  gain_frame_target:
-    type: text
-    text: '你是否接受该方案？
-
-      F=接受   J=拒绝'
+    text: "+"
     color: white
-    height: 54
-    wrapWidth: 900
+    height: 44
+    pos: [0, 0]
     font: SimHei
-  loss_frame_target:
+  frame_label:
     type: text
-    text: '你是否接受该方案？
-
-      F=接受   J=拒绝'
+    text: "{frame_label}"
+    color: [0.95, 0.9, 0.3]
+    height: 34
+    pos: [0, 255]
+    wrapWidth: 880
+    font: SimHei
+  scenario_text:
+    type: text
+    text: "{scenario_text}"
     color: white
-    height: 54
-    wrapWidth: 900
+    height: 30
+    pos: [0, 170]
+    wrapWidth: 960
     font: SimHei
-  mixed_frame_target:
+  safe_option_text:
     type: text
-    text: '你是否接受该方案？
-
-      F=接受   J=拒绝'
+    text: "{safe_option_text}"
+    color: [0.35, 0.9, 0.35]
+    height: 30
+    pos: [-320, 20]
+    wrapWidth: 360
+    font: SimHei
+  gamble_option_text:
+    type: text
+    text: "{gamble_option_text}"
+    color: [0.35, 0.75, 1.0]
+    height: 30
+    pos: [320, 20]
+    wrapWidth: 360
+    font: SimHei
+  key_hint:
+    type: text
+    text: "按 {safe_key} 选方案A（确定）    按 {gamble_key} 选方案B（风险）"
     color: white
-    height: 54
-    wrapWidth: 900
+    height: 24
+    pos: [0, -220]
+    wrapWidth: 980
     font: SimHei
-  gain_frame_hit_feedback:
+  feedback_choice:
     type: text
-    text: 反应已记录
-    color: green
-    height: 42
+    text: "{chosen_text}"
+    color: white
+    height: 34
+    wrapWidth: 960
+    pos: [0, -20]
     font: SimHei
-  gain_frame_miss_feedback:
+  feedback_timeout:
     type: text
-    text: 未在时限内作答
-    color: red
-    height: 42
-    font: SimHei
-  loss_frame_hit_feedback:
-    type: text
-    text: 反应已记录
-    color: green
-    height: 42
-    font: SimHei
-  loss_frame_miss_feedback:
-    type: text
-    text: 未在时限内作答
-    color: red
-    height: 42
-    font: SimHei
-  mixed_frame_hit_feedback:
-    type: text
-    text: 反应已记录
-    color: green
-    height: 42
-    font: SimHei
-  mixed_frame_miss_feedback:
-    type: text
-    text: 未在时限内作答
-    color: red
-    height: 42
+    text: "超时：本试次未作答"
+    color: [1.0, 0.45, 0.45]
+    height: 34
+    wrapWidth: 960
+    pos: [0, -20]
     font: SimHei
   block_break:
     type: text
-    text: '区块 {block_num}/{total_blocks}
+    text: |
+      第 {block_num}/{total_blocks} 组完成
 
-      记录率：{accuracy:.2%}
+      风险选择率：{block_gamble_rate:.1%}
+      平均反应时：{mean_rt_ms:.0f} ms
+      超时次数：{timeout_count}
 
-      当前分数：{total_score}
-
-
-      按空格键继续'
+      按空格键继续。
     color: white
-    height: 24
-    wrapWidth: 900
+    height: 26
+    wrapWidth: 980
     font: SimHei
   good_bye:
     type: text
-    text: '任务结束，最终分数：{total_score}
+    text: |
+      任务结束
 
+      总试次：{total_trials}
+      风险选择率：{overall_gamble_rate:.1%}
+      平均反应时：{mean_rt_ms:.0f} ms
+      超时次数：{timeout_count}
 
-      按空格键退出'
+      收益框架风险率：{gain_rate:.1%}
+      损失框架风险率：{loss_rate:.1%}
+      混合框架风险率：{mixed_rate:.1%}
+
+      按空格键退出。
     color: white
-    height: 28
-    wrapWidth: 900
+    height: 26
+    wrapWidth: 980
     font: SimHei
 triggers:
   map:
@@ -181,27 +165,13 @@ triggers:
     exp_end: 2
     block_onset: 10
     block_end: 11
-    gain_frame_cue_onset: 20
-    loss_frame_cue_onset: 21
-    mixed_frame_cue_onset: 22
-    gain_frame_anti_onset: 30
-    loss_frame_anti_onset: 31
-    mixed_frame_anti_onset: 32
-    gain_frame_target_onset: 40
-    loss_frame_target_onset: 41
-    mixed_frame_target_onset: 42
-    gain_frame_key_press: 50
-    loss_frame_key_press: 51
-    mixed_frame_key_press: 52
-    gain_frame_no_response: 60
-    loss_frame_no_response: 61
-    mixed_frame_no_response: 62
-    gain_frame_hit_fb_onset: 70
-    gain_frame_miss_fb_onset: 71
-    loss_frame_hit_fb_onset: 72
-    loss_frame_miss_fb_onset: 73
-    mixed_frame_hit_fb_onset: 74
-    mixed_frame_miss_fb_onset: 75
+    fixation_onset: 20
+    decision_onset: 30
+    choice_safe: 31
+    choice_gamble: 32
+    choice_timeout: 33
+    feedback_onset: 40
+    iti_onset: 50
   driver:
     type: serial_url
     url: loop://
@@ -211,10 +181,72 @@ triggers:
   policy:
     strict: false
 controller:
-  initial_duration: 0.25
-  min_duration: 0.08
-  max_duration: 0.4
-  step: 0.02
-  target_accuracy: 0.66
-  condition_specific: true
+  fixation_duration: [0.4, 0.7]
+  decision_deadline: 4.0
+  feedback_duration: 0.7
+  iti_duration: [0.4, 0.8]
+  random_seed: null
   enable_logging: true
+  gain_trials:
+    - offer_id: gain_100_80
+      endowment: 100
+      sure_keep: 80
+      gamble_keep: 100
+      gamble_prob: 0.8
+    - offer_id: gain_100_60
+      endowment: 100
+      sure_keep: 60
+      gamble_keep: 100
+      gamble_prob: 0.6
+    - offer_id: gain_120_72
+      endowment: 120
+      sure_keep: 72
+      gamble_keep: 120
+      gamble_prob: 0.6
+    - offer_id: gain_150_105
+      endowment: 150
+      sure_keep: 105
+      gamble_keep: 150
+      gamble_prob: 0.7
+  loss_trials:
+    - offer_id: loss_100_20
+      endowment: 100
+      sure_loss: 20
+      gamble_loss: 100
+      gamble_loss_prob: 0.2
+    - offer_id: loss_100_40
+      endowment: 100
+      sure_loss: 40
+      gamble_loss: 100
+      gamble_loss_prob: 0.4
+    - offer_id: loss_120_36
+      endowment: 120
+      sure_loss: 36
+      gamble_loss: 120
+      gamble_loss_prob: 0.3
+    - offer_id: loss_150_45
+      endowment: 150
+      sure_loss: 45
+      gamble_loss: 150
+      gamble_loss_prob: 0.3
+  mixed_trials:
+    - offer_id: mixed_40_30
+      sure_amount: 0
+      gamble_gain: 40
+      gamble_loss: 30
+      gamble_gain_prob: 0.5
+    - offer_id: mixed_60_45
+      sure_amount: 0
+      gamble_gain: 60
+      gamble_loss: 45
+      gamble_gain_prob: 0.5
+    - offer_id: mixed_30_20
+      sure_amount: 0
+      gamble_gain: 30
+      gamble_loss: 20
+      gamble_gain_prob: 0.4
+    - offer_id: mixed_70_50
+      sure_amount: 10
+      gamble_gain: 70
+      gamble_loss: 50
+      gamble_gain_prob: 0.5
