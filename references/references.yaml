@@ -1,97 +1,61 @@
 ﻿task_id: T000031
-generated_at: '2026-02-19T12:10:00Z'
-selection_policy: openalex_filter_plus_manual_curation
+generated_at: '2026-03-02T13:05:00Z'
+selection_policy: manual_curation_literature_first
 citation_threshold: 100
 papers:
-- id: W3024532045
-  title: Replicating patterns of prospect theory for decision under risk
-  authors:
-  - Kai Ruggeri
-  - Sonia Alì
-  - Mari Louise Berge
-  - Giulia Bertoldo
-  - Ludvig Daae Bjørndal
-  - Anna Cortijos-Bernabeu
-  year: 2020
-  journal: Nature Human Behaviour
-  doi_or_url: https://doi.org/10.1038/s41562-020-0886-x
-  citation_count: 309
-  is_high_impact: true
-  open_access: true
-  used_for:
-  - task_workflow
-  - stimulus_design
-  - condition_logic
-  parameter_bindings: {}
-  notes: Multi-country replication of prospect-theory patterns under risky choice.
-- id: W2140619986
-  title: Salience Theory of Choice Under Risk
-  authors:
-  - Pedro Bordalo
-  - Nicola Gennaioli
-  - Andrei Shleifer
-  year: 2012
-  journal: The Quarterly Journal of Economics
-  doi_or_url: https://doi.org/10.1093/qje/qjs018
-  citation_count: 1262
-  is_high_impact: false
-  open_access: true
-  used_for:
-  - task_workflow
-  - choice_architecture
-  parameter_bindings: {}
-  notes: Supports explicit sure-vs-risk option presentation for decision tasks.
-- id: W2043214237
-  title: Differential Encoding of Losses and Gains in the Human Striatum
-  authors:
-  - Ben Seymour
-  - Nathaniel D. Daw
-  - Peter Dayan
-  - Tania Singer
-  - Raymond J. Dolan
-  year: 2007
-  journal: Journal of Neuroscience
-  doi_or_url: https://doi.org/10.1523/jneurosci.0400-07.2007
-  citation_count: 466
-  is_high_impact: false
-  open_access: true
-  used_for:
-  - gain_loss_contrast
-  - trigger_planning
-  parameter_bindings: {}
-  notes: Reinforces gain-vs-loss contrast as a core analysis axis.
-- id: W2013390773
-  title: Brain correlates of risky decision-making
-  authors:
-  - David Polezzi
-  - Giuseppe Sartori
-  - Rino Rumiati
-  - Giulio Vidotto
-  - Irene Daum
-  year: 2009
-  journal: NeuroImage
-  doi_or_url: https://doi.org/10.1016/j.neuroimage.2009.08.068
-  citation_count: 163
-  is_high_impact: true
-  open_access: true
-  used_for:
-  - timing_parameters
-  - rt_measurement
-  parameter_bindings: {}
-  notes: Supports bounded decision windows and reaction-time analysis in risky choice.
-- id: W4313429369
-  title: 'On the descriptive value of loss aversion in decisions under risk: Six clarifications'
-  authors:
-  - Eyal Ert
-  - Ido Erev
-  year: 2013
-  journal: Judgment and Decision Making
-  doi_or_url: https://doi.org/10.1017/s1930297500005945
-  citation_count: 137
-  is_high_impact: false
-  open_access: true
-  used_for:
-  - mixed_gamble_logic
-  - interpretation_notes
-  parameter_bindings: {}
-  notes: Grounds mixed gain-loss gamble interpretation and analysis cautions.
+  - id: W3024532045
+    title: "Replicating patterns of prospect theory for decision under risk"
+    year: 2020
+    journal: "Nature Human Behaviour"
+    doi_or_url: "https://doi.org/10.1038/s41562-020-0886-x"
+    citation_count: 309
+    open_access: true
+    is_high_impact: true
+    used_for:
+      - condition_logic
+      - framing_workflow
+      - offer_design
+  - id: W2140619986
+    title: "Salience Theory of Choice Under Risk"
+    year: 2012
+    journal: "The Quarterly Journal of Economics"
+    doi_or_url: "https://doi.org/10.1093/qje/qjs018"
+    citation_count: 1262
+    open_access: true
+    is_high_impact: false
+    used_for:
+      - choice_architecture
+      - sure_vs_gamble_structure
+  - id: W2043214237
+    title: "Differential Encoding of Losses and Gains in the Human Striatum"
+    year: 2007
+    journal: "Journal of Neuroscience"
+    doi_or_url: "https://doi.org/10.1523/jneurosci.0400-07.2007"
+    citation_count: 466
+    open_access: true
+    is_high_impact: false
+    used_for:
+      - gain_loss_contrast
+      - trigger_planning
+  - id: W2013390773
+    title: "Brain correlates of risky decision-making"
+    year: 2009
+    journal: "NeuroImage"
+    doi_or_url: "https://doi.org/10.1016/j.neuroimage.2009.08.068"
+    citation_count: 163
+    open_access: true
+    is_high_impact: true
+    used_for:
+      - timing_parameters
+      - rt_measurement
+  - id: W4313429369
+    title: "On the descriptive value of loss aversion in decisions under risk: Six clarifications"
+    year: 2013
+    journal: "Judgment and Decision Making"
+    doi_or_url: "https://doi.org/10.1017/S1930297500005945"
+    citation_count: 137
+    open_access: true
+    is_high_impact: false
+    used_for:
+      - mixed_gamble_logic
+      - interpretation_notes

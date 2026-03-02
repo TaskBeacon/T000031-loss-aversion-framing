@@ -36,6 +36,10 @@ task:
     - space
   safe_key: f
   gamble_key: j
+  choice_labels:
+    safe: 方案A（确定）
+    gamble: 方案B（风险）
+  feedback_choice_template: "你选择了 {choice_label}"
   seed_mode: same_across_sub
   language: Chinese
   voice_name: zh-CN-YunyangNeural

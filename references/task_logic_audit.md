@@ -2,112 +2,97 @@
 
 ## 1. Paradigm Intent
 
-- Task: `loss_aversion_framing`
-- Primary construct: risk preference modulation by gain/loss framing, plus mixed-gamble loss aversion tendency.
-- Manipulated factors: trial condition (`gain_frame`, `loss_frame`, `mixed_frame`) and offer parameters sampled from condition-specific offer pools.
-- Dependent measures: choice (`safe` vs `gamble`), response latency, timeout rate, condition-level gamble rate.
+- Task: `loss_aversion_framing`.
+- Construct: risky-choice preference under gain/loss framing, including mixed gain-loss lotteries.
+- Manipulated trial factor: condition family (`gain_frame`, `loss_frame`, `mixed_frame`) plus sampled offer parameters.
+- Primary dependent measures:
+  - gamble choice rate
+  - condition-specific gamble rates
+  - response time
+  - timeout frequency.
 - Key citations:
-  - `W3024532045` (Ruggeri et al., 2020, *Nature Human Behaviour*)
-  - `W4313429369` (Ert & Erev, 2013, *Judgment and Decision Making*)
-  - `W2043214237` (Seymour et al., 2007, *Journal of Neuroscience*)
+  - `W3024532045` (Ruggeri et al., 2020, Nature Human Behaviour)
+  - `W4313429369` (Ert & Erev, 2013, Judgment and Decision Making)
+  - `W2043214237` (Seymour et al., 2007, Journal of Neuroscience)
 
 ## 2. Block/Trial Workflow
 
 ### Block Structure
 
-- Total blocks: `3`
-- Trials per block: `32`
-- Randomization/counterbalancing: `BlockUnit.generate_conditions()` draws configured conditions; per trial, the controller samples a concrete offer from that condition's offer bank.
+- Human profile: `3` blocks x `32` trials.
+- QA/sim profiles: `1` block x `18` trials.
+- Block setup:
+  - `controller.start_block(block_idx)` resets block metrics.
+  - `BlockUnit.generate_conditions()` samples configured condition tokens.
 
 ### Trial State Machine
 
 1. `fixation`
-   - Onset trigger: `fixation_onset`
-   - Stimuli shown: central fixation cross (`fixation`).
-   - Valid keys: `[]`
-   - Timeout behavior: auto-advance after sampled fixation duration.
-   - Next state: `decision`
+- Stimulus: `fixation`.
+- Trigger: `fixation_onset`.
+- Keys: none.
 
 2. `decision`
-   - Onset trigger: `decision_onset`
-   - Stimuli shown together:
-     - `frame_label` (condition label)
-     - `scenario_text` (trial budget/scenario text)
-     - `safe_option_text` (sure option)
-     - `gamble_option_text` (risky option)
-     - `key_hint` (A/B key reminder)
-   - Valid keys: `[safe_key, gamble_key]` (`f/j` by default)
-   - Timeout behavior: if no response before deadline, emit `choice_timeout` and mark trial as timeout.
-   - Response triggers:
-     - safe response: `choice_safe`
-     - gamble response: `choice_gamble`
-   - Next state: `feedback`
+- Stimuli: `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint`.
+- Trigger: `decision_onset`.
+- Valid keys: `safe_key`, `gamble_key`.
+- Response triggers: `choice_safe` / `choice_gamble`.
+- Timeout trigger: `choice_timeout`.
 
 3. `feedback`
-   - Onset trigger: `feedback_onset`
-   - Stimuli shown:
-     - `feedback_choice` when participant responded, or
-     - `feedback_timeout` when no response.
-   - Valid keys: `[]`
-   - Timeout behavior: auto-advance after fixed feedback duration.
-   - Next state: `iti`
+- Trigger: `feedback_onset`.
+- Stimulus branch:
+  - `feedback_choice` for responded trials.
+  - `feedback_timeout` for omitted trials.
+- Keys: none.
 
 4. `iti`
-   - Onset trigger: `iti_onset`
-   - Stimuli shown: fixation cross (`fixation`).
-   - Valid keys: `[]`
-   - Timeout behavior: auto-advance after sampled ITI duration.
-   - Next state: next trial.
+- Stimulus: `fixation`.
+- Trigger: `iti_onset`.
+- Keys: none.
 
 ## 3. Condition Semantics
 
-- Condition ID: `gain_frame`
-  - Participant-facing meaning: gain-framed choice between a sure keep amount vs probabilistic keep-all/keep-none option.
-  - Concrete stimulus realization:
-    - frame label: `收益框架`
-    - scenario: `你获得 X 元预算。请选择其一：`
-    - safe option: `方案A（确定） 保留 ...`
-    - gamble option: `方案B（风险） p% 保留 ... / (1-p)% 保留 0`
-  - Outcome fields: `chosen_option`, `chose_gamble`, `rt_s`, `timed_out`, EV metadata.
+- `gain_frame`:
+  - sure keep amount vs risky keep-all/keep-none option.
+  - emphasizes retained gains in wording.
+- `loss_frame`:
+  - sure loss amount vs risky full-loss/no-loss option.
+  - emphasizes losses in wording.
+- `mixed_frame`:
+  - sure amount vs mixed gain/loss lottery.
+  - includes both positive and negative gamble outcomes.
 
-- Condition ID: `loss_frame`
-  - Participant-facing meaning: loss-framed choice between a sure loss vs probabilistic full-loss/no-loss option.
-  - Concrete stimulus realization:
-    - frame label: `损失框架`
-    - scenario: `你获得 X 元预算。请选择其一：`
-    - safe option: `方案A（确定） 损失 ...`
-    - gamble option: `方案B（风险） p% 损失 0 / (1-p)% 损失 ...`
-  - Outcome fields: same schema as gain condition.
-
-- Condition ID: `mixed_frame`
-  - Participant-facing meaning: mixed gamble choice comparing sure amount (often 0) to gain/loss lottery.
-  - Concrete stimulus realization:
-    - frame label: `混合框架`
-    - scenario: `请选择其一：`
-    - safe option: `方案A（确定） 获得/损失 ...`
-    - gamble option: `方案B（风险） p% 获得 ... / (1-p)% 损失 ...`
-  - Outcome fields: same schema as gain/loss conditions.
+Each trial samples an offer from the condition-specific controller bank and logs `offer_id` plus EV-relevant parameters.
 
 ## 4. Response and Scoring Rules
 
-- Response mapping: `safe_key=f`, `gamble_key=j` (configurable).
-- Missing-response policy: timeout trials are explicitly logged with `timed_out=true`, no choice assignment, and timeout feedback text.
-- Correctness logic: none (preference task, not right/wrong discrimination).
-- Reward/penalty updates: no online points economy; controller updates behavioral metrics only.
-- Running metrics:
-  - block/session: gamble rate, timeout rate, mean RT.
-  - condition-level: block gamble rate and trial count.
+- Key mapping (default):
+  - `f -> safe` (`方案A`)
+  - `j -> gamble` (`方案B`)
+- Timeout policy:
+  - no response key, `timed_out=true`
+  - `chosen_option` empty
+  - timeout feedback shown.
+- Correctness logic: none (preference task).
+- Metrics update:
+  - `chose_gamble` recorded per responded trial
+  - block and condition gamble-rate summaries computed in main runtime.
+- QA-required output fields include:
+  - `condition`, `block_id`, `trial_index`, `offer_id`, `response_key`, `chosen_option`, `timed_out`, `rt_s`.
 
 ## 5. Stimulus Layout Plan
 
-- Decision screen spatial layout (all text stimuli are rendered concurrently):
-  - `frame_label`: top center `pos [0, 255]`, height `34`, yellow-tinted for condition salience.
-  - `scenario_text`: upper center `pos [0, 170]`, height `30`.
-  - `safe_option_text`: left option column `pos [-320, 20]`, wrap `360`.
-  - `gamble_option_text`: right option column `pos [320, 20]`, wrap `360`.
-  - `key_hint`: bottom center `pos [0, -220]`, height `24`.
-- Visual hierarchy: condition/scenario first, then two options in left-right parallel layout, then response hint.
-- Readability constraints: all participant-facing Chinese text uses `font: SimHei`; wrap widths are set to prevent overlap on `1280x720`.
+- Decision screen (`1280x720`, `pix`):
+  - `frame_label` at top center (`0, 255`) for condition salience.
+  - `scenario_text` below frame label (`0, 170`).
+  - `safe_option_text` left column (`-320, 20`, wrap `360`).
+  - `gamble_option_text` right column (`320, 20`, wrap `360`).
+  - `key_hint` near bottom (`0, -220`).
+- Visual hierarchy:
+  - frame/scenario context first, then side-by-side options, then key hint.
+- Localization policy:
+  - participant-facing labels/text are config-driven (`stimuli.*` and `task.choice_labels`), not hardcoded in `run_trial.py`.
 
 ## 6. Trigger Plan
 
@@ -117,20 +102,25 @@
 | `exp_end` | 2 | experiment end |
 | `block_onset` | 10 | block start |
 | `block_end` | 11 | block end |
-| `fixation_onset` | 20 | fixation phase onset |
-| `decision_onset` | 30 | decision screen onset |
-| `choice_safe` | 31 | safe option key response |
-| `choice_gamble` | 32 | gamble option key response |
+| `fixation_onset` | 20 | fixation onset |
+| `decision_onset` | 30 | decision display onset |
+| `choice_safe` | 31 | safe option chosen |
+| `choice_gamble` | 32 | gamble option chosen |
 | `choice_timeout` | 33 | no response before deadline |
-| `feedback_onset` | 40 | feedback phase onset |
+| `feedback_onset` | 40 | feedback onset |
 | `iti_onset` | 50 | inter-trial interval onset |
 
-## 7. Inference Log
+## 7. Architecture Decisions (Auditability)
 
-- Decision: use three condition families (`gain_frame`, `loss_frame`, `mixed_frame`) in one task implementation.
-- Why inference was required: source literature varies in whether framing and mixed-gamble manipulations are presented in separate experiments.
-- Citation-supported rationale: all selected papers address risk decisions under gain/loss framing or mixed gain-loss valuation; merged implementation preserves these core manipulations in an auditable single protocol.
+- `main.py` keeps one mode-aware flow (`human|qa|sim`) with identical trial orchestration and summary computation.
+- `src/run_trial.py` removes MID-template states and uses framing-native phases (`fixation -> decision -> feedback -> iti`).
+- Safe/gamble response triggers are emitted after mapping response key to semantic choice.
+- Decision trial context includes `safe_key` and `gamble_key`, enabling sampler responders to act from explicit mappings.
+- Offer semantics are sampled by controller and logged (`offer_id`, EV fields) for reproducible audit traces.
 
-- Decision: default offer magnitudes/probabilities are configured as reusable offer banks instead of one fixed canonical schedule.
-- Why inference was required: selected papers report paradigm logic and choice patterns, but not one universal item list for all contexts.
-- Citation-supported rationale: configurable offer banks preserve sure-vs-risk framing structure while enabling reproducible tuning via config.
+## 8. Inference Log
+
+- Offer-bank magnitudes/probabilities are implementation inferences constrained by framing literature semantics, not one universal citation-prescribed item list.
+- Human run uses three blocks for stable condition-wise rate estimates; QA/sim downsample trial counts for operational validation speed.
+- Feedback wording for chosen option is template-driven in config (`task.feedback_choice_template`) as a localization portability inference.
+- No monetary accumulation is tracked online; this is an inference to keep the task focused on framing-dependent choice preference rather than running wealth dynamics.

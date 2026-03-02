@@ -1,15 +1,13 @@
 ﻿# Stimulus Mapping
 
-Task: `Loss Aversion / Framing Task`
+## Mapping Table
 
-| Condition | Implemented Stimulus IDs | Source Paper ID | Evidence (quote/figure/table) | Implementation Mode | Notes |
-|---|---|---|---|---|---|
-| `gain_frame` | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint`, `feedback_choice`, `feedback_timeout`, `fixation` | `W3024532045` | Risk decisions under gain framing are implemented as sure-vs-gamble options with explicit probabilities/outcomes. | `psychopy_builtin` | Left/right option layout is fixed; content values are trial-formatted from controller offer banks. |
-| `loss_frame` | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint`, `feedback_choice`, `feedback_timeout`, `fixation` | `W3024532045` | Loss framing is implemented as sure loss versus probabilistic larger loss/no-loss alternatives. | `psychopy_builtin` | Condition-specific text is generated per trial using sampled loss offers. |
-| `mixed_frame` | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint`, `feedback_choice`, `feedback_timeout`, `fixation` | `W4313429369` | Mixed gain/loss lotteries are implemented against a sure baseline option to capture loss-aversion tendency. | `psychopy_builtin` | Mixed trials include both positive and negative outcomes in one gamble option. |
-| `all_conditions` | `instruction_text`, `block_break`, `good_bye` | `W2140619986` | Shared instructions and summary screens provide a stable decision-task envelope across conditions. | `psychopy_builtin` | Participant-facing Chinese text and SimHei font are consistent across modes. |
-
-Implementation mode legend:
-- `psychopy_builtin`: stimulus rendered via PsychoPy primitives in config.
-- `generated_reference_asset`: task-specific synthetic assets generated from reference-described stimulus rules.
-- `licensed_external_asset`: externally sourced licensed media with protocol linkage.
+| Condition | Stage/Phase | Stimulus IDs | Participant-Facing Content | Source Paper ID | Evidence (quote/figure/table) | Implementation Mode | Asset References | Notes |
+|---|---|---|---|---|---|---|---|---|
+| `gain_frame` | decision | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint` | Gain-framed sure option vs risky option with explicit probabilities and outcomes. | W3024532045 | Gain framing presents equivalent expected-value decisions in different risk formats. | psychopy_builtin | `config/*.yaml -> stimuli.frame_label/scenario_text/safe_option_text/gamble_option_text/key_hint` | Offer strings come from controller offer bank and are rendered through config templates. |
+| `loss_frame` | decision | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint` | Loss-framed sure loss vs risky loss/no-loss alternative. | W3024532045 | Loss framing should preserve same choice architecture with loss wording. | psychopy_builtin | `config/*.yaml -> stimuli.frame_label/scenario_text/safe_option_text/gamble_option_text/key_hint` | Same spatial layout as gain frame to isolate framing effect. |
+| `mixed_frame` | decision | `frame_label`, `scenario_text`, `safe_option_text`, `gamble_option_text`, `key_hint` | Mixed gain/loss lottery against a sure baseline amount. | W4313429369 | Mixed gambles are central for loss-aversion interpretation. | psychopy_builtin | `config/*.yaml -> stimuli.frame_label/scenario_text/safe_option_text/gamble_option_text/key_hint` | Includes both positive and negative outcomes in one gamble option. |
+| `all_conditions` | fixation | `fixation` | Central fixation before choice display. | W2013390773 | Pre-decision baseline separation is standard for risky-choice timing control. | psychopy_builtin | `config/*.yaml -> stimuli.fixation` | Jittered duration is sampled per trial. |
+| `all_conditions` | feedback | `feedback_choice`, `feedback_timeout` | Feedback confirms selected option or timeout omission. | W2043214237 | Post-choice feedback epoch is event-coded for analysis. | psychopy_builtin | `config/*.yaml -> stimuli.feedback_choice/feedback_timeout` | Choice wording is config-driven via `task.feedback_choice_template`. |
+| `all_conditions` | iti | `fixation` | Inter-trial fixation reset before next offer. | W2013390773 | ITI jitter reduces temporal predictability. | psychopy_builtin | `config/*.yaml -> stimuli.fixation` | Triggered by `iti_onset`. |
+| `all_conditions` | envelope | `instruction_text`, `block_break`, `good_bye` | Instructions and block/session summaries with gamble-rate metrics. | W2140619986 | Consistent envelope screens improve interpretability and compliance. | psychopy_builtin | `config/*.yaml -> stimuli.instruction_text/block_break/good_bye` | No participant-facing trial text is hardcoded in `run_trial.py`. |

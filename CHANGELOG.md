@@ -1,5 +1,17 @@
 ﻿# CHANGELOG
 
+## [v0.1.3-dev] - 2026-03-02
+
+### Changed
+- Replaced `src/run_trial.py` MID-template stages with framing-native trial flow (`fixation -> decision -> feedback -> iti`).
+- Added config-first localization helpers in task config (`task.choice_labels`, `task.feedback_choice_template`) and used them for feedback wording.
+- Rebuilt all reference artifacts to the current contract schema (`references.yaml`, `references.md`, `parameter_mapping.md`, `stimulus_mapping.md`, `task_logic_audit.md`).
+
+### Fixed
+- Restored QA-required trial columns in runtime output (`trial_index`, `offer_id`, `response_key`, `chosen_option`, `timed_out`, `rt_s`).
+- Removed remaining MID cue/anticipation/target dependencies from runtime implementation.
+- Restored contract-required reference headings and table columns, including task logic sections `## 7` and `## 8`.
+
 ## [v0.1.2-dev] - 2026-02-19
 
 ### Changed
@@ -45,3 +57,4 @@ All notable development changes for `T000031-loss-aversion-framing` are document
 - `psyflow-qa <task_path> --config config/config_qa.yaml --no-maturity-update`
 - `python main.py sim --config config/config_scripted_sim.yaml`
 - `python main.py sim --config config/config_sampler_sim.yaml`
+
