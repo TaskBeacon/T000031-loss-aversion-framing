@@ -16,7 +16,7 @@
 
 ### Changed
 - Repaired paradigm implementation from MID-derived cue/target flow to framing-specific `fixation -> decision -> feedback -> iti` trial logic.
-- Replaced MID adaptive controller with offer-sampling controller for `gain_frame`, `loss_frame`, and `mixed_frame` conditions.
+- Replaced MID adaptive control with config-defined offer sampling for `gain_frame`, `loss_frame`, and `mixed_frame` conditions.
 - Updated all configs to Chinese participant-facing stimuli (`SimHei`) with explicit left/right option layout and framing-specific trigger map.
 - Reworked sampler responder to act on `decision` phase and safe/gamble key semantics.
 - Rebuilt references bundle (`task_logic_audit.md`, `stimulus_mapping.md`, `parameter_mapping.md`, `references.*`, `selected_papers.json`) to literature-first framing evidence.

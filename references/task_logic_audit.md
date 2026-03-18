@@ -1,15 +1,15 @@
-﻿# Task Logic Audit: Loss Aversion / Framing Task
+# Task Logic Audit: Loss Aversion / Framing Task
 
 ## 1. Paradigm Intent
 
 - Task: `loss_aversion_framing`.
 - Construct: risky-choice preference under gain/loss framing, including mixed gain-loss lotteries.
-- Manipulated trial factor: condition family (`gain_frame`, `loss_frame`, `mixed_frame`) plus sampled offer parameters.
+- Manipulated trial factor: condition family (`gain_frame`, `loss_frame`, `mixed_frame`) plus sampled offer parameters from `task.offer_banks`.
 - Primary dependent measures:
   - gamble choice rate
   - condition-specific gamble rates
   - response time
-  - timeout frequency.
+  - timeout frequency
 - Key citations:
   - `W3024532045` (Ruggeri et al., 2020, Nature Human Behaviour)
   - `W4313429369` (Ert & Erev, 2013, Judgment and Decision Making)
@@ -22,8 +22,8 @@
 - Human profile: `3` blocks x `32` trials.
 - QA/sim profiles: `1` block x `18` trials.
 - Block setup:
-  - `controller.start_block(block_idx)` resets block metrics.
-  - `BlockUnit.generate_conditions()` samples configured condition tokens.
+  - `BlockUnit.generate_conditions(weights=settings.resolve_condition_weights())` resolves the block schedule.
+  - `run_trial(...)` consumes the scheduled condition token and samples the concrete offer for that trial.
 
 ### Trial State Machine
 
@@ -63,7 +63,7 @@
   - sure amount vs mixed gain/loss lottery.
   - includes both positive and negative gamble outcomes.
 
-Each trial samples an offer from the condition-specific controller bank and logs `offer_id` plus EV-relevant parameters.
+Each trial samples an offer from the condition-specific bank in `task.offer_banks` via `sample_offer(settings, condition, block_idx, trial_id)`. Sampling is deterministic for a given block seed / overall seed / trial identity so QA and replay traces are auditable.
 
 ## 4. Response and Scoring Rules
 
@@ -73,13 +73,13 @@ Each trial samples an offer from the condition-specific controller bank and logs
 - Timeout policy:
   - no response key, `timed_out=true`
   - `chosen_option` empty
-  - timeout feedback shown.
-- Correctness logic: none (preference task).
+  - timeout feedback shown
+- Correctness logic: none; this is a preference task.
 - Metrics update:
   - `chose_gamble` recorded per responded trial
-  - block and condition gamble-rate summaries computed in main runtime.
+  - block and condition gamble-rate summaries are computed from reduced rows in `main.py`
 - QA-required output fields include:
-  - `condition`, `block_id`, `trial_index`, `offer_id`, `response_key`, `chosen_option`, `timed_out`, `rt_s`.
+  - `condition`, `block_id`, `trial_index`, `offer_id`, `response_key`, `chosen_option`, `timed_out`, `rt_s`
 
 ## 5. Stimulus Layout Plan
 
@@ -89,6 +89,8 @@ Each trial samples an offer from the condition-specific controller bank and logs
   - `safe_option_text` left column (`-320, 20`, wrap `360`).
   - `gamble_option_text` right column (`320, 20`, wrap `360`).
   - `key_hint` near bottom (`0, -220`).
+- Feedback screen:
+  - centered feedback text at approximately the same vertical anchor as the decision prompt.
 - Visual hierarchy:
   - frame/scenario context first, then side-by-side options, then key hint.
 - Localization policy:
@@ -113,14 +115,15 @@ Each trial samples an offer from the condition-specific controller bank and logs
 ## 7. Architecture Decisions (Auditability)
 
 - `main.py` keeps one mode-aware flow (`human|qa|sim`) with identical trial orchestration and summary computation.
-- `src/run_trial.py` removes MID-template states and uses framing-native phases (`fixation -> decision -> feedback -> iti`).
-- Safe/gamble response triggers are emitted after mapping response key to semantic choice.
+- `main.py` uses `BlockUnit.generate_conditions(weights=settings.resolve_condition_weights())`; the task no longer relies on a separate task-local state manager.
+- `src/run_trial.py` uses framing-native phases (`fixation -> decision -> feedback -> iti`) and writes trial state directly from the decision snapshot.
+- `src/utils.py` owns deterministic offer sampling, condition normalization, and block/session summary helpers.
+- Safe/gamble response triggers are emitted after mapping the response key to the semantic choice.
 - Decision trial context includes `safe_key` and `gamble_key`, enabling sampler responders to act from explicit mappings.
-- Offer semantics are sampled by controller and logged (`offer_id`, EV fields) for reproducible audit traces.
 
 ## 8. Inference Log
 
 - Offer-bank magnitudes/probabilities are implementation inferences constrained by framing literature semantics, not one universal citation-prescribed item list.
 - Human run uses three blocks for stable condition-wise rate estimates; QA/sim downsample trial counts for operational validation speed.
 - Feedback wording for chosen option is template-driven in config (`task.feedback_choice_template`) as a localization portability inference.
-- No monetary accumulation is tracked online; this is an inference to keep the task focused on framing-dependent choice preference rather than running wealth dynamics.
+- No monetary accumulation is tracked online; this keeps the task focused on framing-dependent choice preference rather than running wealth dynamics.

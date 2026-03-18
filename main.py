@@ -18,9 +18,10 @@ from psyflow import (
     load_config,
     parse_task_run_options,
     runtime_context,
+    reset_trial_counter,
 )
 
-from src import Controller, run_trial
+from src import run_trial
 
 
 def _make_qa_trigger_runtime():
@@ -139,9 +140,8 @@ def _run_impl(*, mode: str, output_dir: Path | None, cfg: dict, participant_id: 
         stim_bank = stim_bank.convert_to_voice("instruction_text")
     stim_bank = stim_bank.preload_all()
 
-    settings.controller = cfg["controller_config"]
     settings.save_to_json()
-    controller = Controller.from_dict(settings.controller)
+    reset_trial_counter()
 
     trigger_runtime.send(settings.triggers.get("exp_onset"))
 
@@ -155,7 +155,6 @@ def _run_impl(*, mode: str, output_dir: Path | None, cfg: dict, participant_id: 
     all_data: list[dict] = []
     total_blocks = int(getattr(settings, "total_blocks", 1))
     for block_i in range(total_blocks):
-        controller.start_block(block_i)
         if mode not in ("qa", "sim"):
             count_down(win, 3, color="black")
 
@@ -167,14 +166,13 @@ def _run_impl(*, mode: str, output_dir: Path | None, cfg: dict, participant_id: 
                 window=win,
                 keyboard=kb,
             )
-            .generate_conditions()
+            .generate_conditions(weights=settings.resolve_condition_weights())
             .on_start(lambda b: trigger_runtime.send(settings.triggers.get("block_onset")))
             .on_end(lambda b: trigger_runtime.send(settings.triggers.get("block_end")))
             .run_trial(
                 partial(
                     run_trial,
                     stim_bank=stim_bank,
-                    controller=controller,
                     trigger_runtime=trigger_runtime,
                     block_id=f"block_{block_i}",
                     block_idx=block_i,

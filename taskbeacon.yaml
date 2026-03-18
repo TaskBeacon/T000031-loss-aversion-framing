@@ -4,7 +4,7 @@ title: Loss Aversion / Framing Task
 acquisition: behavior
 variant: baseline
 cognitive_domain: []
-maturity: draft
+maturity: smoke_tested
 version:
   release_tag: v0.1.2-dev
 contracts:

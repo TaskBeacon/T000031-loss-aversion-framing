@@ -1,46 +1,35 @@
 from __future__ import annotations
 
-from functools import partial
 from typing import Any
 
-from psyflow import StimUnit, set_trial_context
+from psyflow import StimUnit, next_trial_id, set_trial_context
 
-from .utils import CHOICE_GAMBLE, CHOICE_SAFE
-
-
-def _deadline_s(value: Any) -> float | None:
-    if isinstance(value, (int, float)):
-        return float(value)
-    if isinstance(value, (list, tuple)) and value:
-        try:
-            return float(max(value))
-        except Exception:
-            return None
-    return None
+from .utils import CHOICE_GAMBLE, CHOICE_SAFE, normalize_condition, sample_offer
 
 
-def _as_duration(controller, value: Any, default_value: float) -> float:
-    if hasattr(controller, "sample_duration"):
-        return float(controller.sample_duration(value, default_value))
-    if isinstance(value, (int, float)):
-        return float(value)
-    if isinstance(value, (list, tuple)) and value:
-        try:
-            return float(max(value))
-        except Exception:
-            return float(default_value)
-    return float(default_value)
-
-
-def _trial_id(controller) -> int:
-    if hasattr(controller, "next_trial_id"):
-        return int(controller.next_trial_id())
-    return 1
-
-
-def _task_dict(settings, attr_name: str) -> dict[str, Any]:
+def _task_dict(settings: Any, attr_name: str) -> dict[str, Any]:
     value = getattr(settings, attr_name, {})
     return value if isinstance(value, dict) else {}
+
+
+def _normalize_key(value: Any) -> str:
+    return str(value or "").strip().lower()
+
+
+def _as_float(value: Any) -> float | None:
+    try:
+        parsed = float(value)
+    except Exception:
+        return None
+    return parsed if parsed == parsed else None
+
+
+def _trigger_code(trigger_map: dict[str, Any], key: str, default: int) -> int:
+    try:
+        value = trigger_map.get(key, default)
+        return int(value)
+    except Exception:
+        return int(default)
 
 
 def run_trial(
@@ -49,27 +38,39 @@ def run_trial(
     settings,
     condition,
     stim_bank,
-    controller,
     trigger_runtime,
     block_id=None,
     block_idx=None,
 ):
     """Run one framing trial (fixation -> decision -> feedback -> iti)."""
-    trial_id = _trial_id(controller)
-    condition_name = str(getattr(controller, "parse_condition", lambda c: c)(condition)).strip().lower()
+    trial_id = next_trial_id()
+    condition_name = normalize_condition(condition)
     block_label = str(block_id) if block_id is not None else "block_0"
     block_index = int(block_idx) if block_idx is not None else 0
-    block_trial_index = int(getattr(controller, "trial_count_block", 0)) + 1
+    trial_per_block = int(getattr(settings, "trials_per_block", getattr(settings, "trial_per_block", 1)) or 1)
+    block_trial_index = ((trial_id - 1) % trial_per_block) + 1
 
     safe_key = str(getattr(settings, "safe_key", "f")).strip().lower()
     gamble_key = str(getattr(settings, "gamble_key", "j")).strip().lower()
     response_keys = [safe_key, gamble_key]
+    choice_labels = _task_dict(settings, "choice_labels")
+    safe_label = str(choice_labels.get(CHOICE_SAFE, CHOICE_SAFE))
+    gamble_label = str(choice_labels.get(CHOICE_GAMBLE, CHOICE_GAMBLE))
+    feedback_template = str(getattr(settings, "feedback_choice_template", "你选择了 {choice_label}"))
+    trigger_map = _task_dict(settings, "triggers")
+    fixation_onset = _trigger_code(trigger_map, "fixation_onset", 20)
+    decision_onset = _trigger_code(trigger_map, "decision_onset", 30)
+    choice_safe_trigger = _trigger_code(trigger_map, "choice_safe", 31)
+    choice_gamble_trigger = _trigger_code(trigger_map, "choice_gamble", 32)
+    choice_timeout_trigger = _trigger_code(trigger_map, "choice_timeout", 33)
+    feedback_onset = _trigger_code(trigger_map, "feedback_onset", 40)
+    iti_onset = _trigger_code(trigger_map, "iti_onset", 50)
 
-    offer = controller.sample_offer(condition_name)
-    fixation_duration = _as_duration(controller, settings.fixation_duration, 0.5)
-    decision_deadline = float(getattr(settings, "decision_deadline", 4.0))
-    feedback_duration = float(getattr(settings, "feedback_duration", 0.7))
-    iti_duration = _as_duration(controller, settings.iti_duration, 0.5)
+    offer = sample_offer(settings, condition_name, block_idx=block_index, trial_id=trial_id)
+    fixation_duration = getattr(settings, "fixation_duration", 0.5)
+    decision_deadline = getattr(settings, "decision_deadline", 4.0)
+    feedback_duration = getattr(settings, "feedback_duration", 0.7)
+    iti_duration = getattr(settings, "iti_duration", 0.5)
 
     trial_data = {
         "condition": condition_name,
@@ -80,38 +81,62 @@ def run_trial(
         "offer_id": str(offer.get("offer_id", "")),
     }
 
-    make_unit = partial(StimUnit, win=win, kb=kb, runtime=trigger_runtime)
-
-    fixation = make_unit(unit_label="fixation").add_stim(stim_bank.get("fixation"))
+    fixation = StimUnit("fixation", win, kb, runtime=trigger_runtime).add_stim(stim_bank.get("fixation"))
     set_trial_context(
         fixation,
         trial_id=trial_id,
         phase="fixation",
-        deadline_s=_deadline_s(fixation_duration),
+        deadline_s=fixation_duration,
         valid_keys=[],
         block_id=block_label,
         condition_id=condition_name,
-        task_factors={"stage": "fixation", "offer_id": trial_data["offer_id"], "block_idx": block_index},
+        task_factors={
+            "stage": "fixation",
+            "offer_id": trial_data["offer_id"],
+            "block_idx": block_index,
+            "trial_id": trial_id,
+        },
         stim_id="fixation",
     )
-    fixation.show(
-        duration=fixation_duration,
-        onset_trigger=settings.triggers.get("fixation_onset"),
-    ).to_dict(trial_data)
+    fixation.show(duration=fixation_duration, onset_trigger=fixation_onset).to_dict(trial_data)
 
-    decision = make_unit(unit_label="decision")
-    decision.add_stim(stim_bank.get_and_format("frame_label", frame_label=str(offer.get("frame_label", ""))))
-    decision.add_stim(stim_bank.get_and_format("scenario_text", scenario_text=str(offer.get("scenario_text", ""))))
-    decision.add_stim(stim_bank.get_and_format("safe_option_text", safe_option_text=str(offer.get("safe_text", ""))))
+    decision = StimUnit("decision", win, kb, runtime=trigger_runtime)
     decision.add_stim(
-        stim_bank.get_and_format("gamble_option_text", gamble_option_text=str(offer.get("gamble_text", "")))
+        stim_bank.get_and_format(
+            "frame_label",
+            frame_label=str(offer.get("frame_label", "")),
+        )
     )
-    decision.add_stim(stim_bank.get_and_format("key_hint", safe_key=safe_key.upper(), gamble_key=gamble_key.upper()))
+    decision.add_stim(
+        stim_bank.get_and_format(
+            "scenario_text",
+            scenario_text=str(offer.get("scenario_text", "")),
+        )
+    )
+    decision.add_stim(
+        stim_bank.get_and_format(
+            "safe_option_text",
+            safe_option_text=str(offer.get("safe_text", "")),
+        )
+    )
+    decision.add_stim(
+        stim_bank.get_and_format(
+            "gamble_option_text",
+            gamble_option_text=str(offer.get("gamble_text", "")),
+        )
+    )
+    decision.add_stim(
+        stim_bank.get_and_format(
+            "key_hint",
+            safe_key=safe_key.upper(),
+            gamble_key=gamble_key.upper(),
+        )
+    )
     set_trial_context(
         decision,
         trial_id=trial_id,
         phase="decision",
-        deadline_s=_deadline_s(decision_deadline),
+        deadline_s=decision_deadline,
         valid_keys=response_keys,
         block_id=block_label,
         condition_id=condition_name,
@@ -121,52 +146,48 @@ def run_trial(
             "safe_key": safe_key,
             "gamble_key": gamble_key,
             "block_idx": block_index,
+            "trial_id": trial_id,
         },
         stim_id="frame_label+scenario_text+safe_option_text+gamble_option_text+key_hint",
     )
     decision.capture_response(
         keys=response_keys,
+        correct_keys=response_keys,
         duration=decision_deadline,
-        onset_trigger=settings.triggers.get("decision_onset"),
-        response_trigger=None,
-        timeout_trigger=settings.triggers.get("choice_timeout"),
-    )
-    decision.to_dict(trial_data)
+        response_trigger={
+            safe_key: choice_safe_trigger,
+            gamble_key: choice_gamble_trigger,
+        },
+        onset_trigger=decision_onset,
+        timeout_trigger=choice_timeout_trigger,
+    ).to_dict(trial_data)
 
-    response_key = str(decision.get_state("response", "")).strip().lower()
+    response_key = _normalize_key(decision.get_state("response", ""))
     timed_out = response_key not in response_keys
     if timed_out:
         chosen_option = ""
         chose_gamble: bool | None = None
+        feedback_stim = stim_bank.get("feedback_timeout")
     elif response_key == safe_key:
         chosen_option = CHOICE_SAFE
         chose_gamble = False
-        trigger_runtime.send(settings.triggers.get("choice_safe"))
+        chosen_text = feedback_template.replace("{choice_label}", safe_label)
+        feedback_stim = stim_bank.get_and_format("feedback_choice", chosen_text=chosen_text)
     else:
         chosen_option = CHOICE_GAMBLE
         chose_gamble = True
-        trigger_runtime.send(settings.triggers.get("choice_gamble"))
-
-    choice_labels = _task_dict(settings, "choice_labels")
-    feedback_template = str(getattr(settings, "feedback_choice_template", "{choice_label}"))
-    safe_label = str(choice_labels.get(CHOICE_SAFE, CHOICE_SAFE))
-    gamble_label = str(choice_labels.get(CHOICE_GAMBLE, CHOICE_GAMBLE))
-
-    if timed_out:
-        feedback_stim_id = "feedback_timeout"
-        feedback_stim = stim_bank.get("feedback_timeout")
-    else:
-        choice_label = gamble_label if bool(chose_gamble) else safe_label
-        chosen_text = feedback_template.format(choice_label=choice_label)
-        feedback_stim_id = "feedback_choice"
+        chosen_text = feedback_template.replace("{choice_label}", gamble_label)
         feedback_stim = stim_bank.get_and_format("feedback_choice", chosen_text=chosen_text)
 
-    feedback = make_unit(unit_label="feedback").add_stim(feedback_stim)
+    rt_value = decision.get_state("rt", None)
+    rt_s = _as_float(rt_value)
+
+    feedback = StimUnit("feedback", win, kb, runtime=trigger_runtime).add_stim(feedback_stim)
     set_trial_context(
         feedback,
         trial_id=trial_id,
         phase="feedback",
-        deadline_s=_deadline_s(feedback_duration),
+        deadline_s=feedback_duration,
         valid_keys=[],
         block_id=block_label,
         condition_id=condition_name,
@@ -176,33 +197,29 @@ def run_trial(
             "chosen_option": chosen_option,
             "timed_out": timed_out,
             "block_idx": block_index,
+            "trial_id": trial_id,
         },
-        stim_id=feedback_stim_id,
+        stim_id="feedback_timeout" if timed_out else "feedback_choice",
     )
-    feedback.show(
-        duration=feedback_duration,
-        onset_trigger=settings.triggers.get("feedback_onset"),
-    ).to_dict(trial_data)
+    feedback.show(duration=feedback_duration, onset_trigger=feedback_onset).to_dict(trial_data)
 
-    iti = make_unit(unit_label="iti").add_stim(stim_bank.get("fixation"))
+    iti = StimUnit("iti", win, kb, runtime=trigger_runtime).add_stim(stim_bank.get("fixation"))
     set_trial_context(
         iti,
         trial_id=trial_id,
         phase="iti",
-        deadline_s=_deadline_s(iti_duration),
+        deadline_s=iti_duration,
         valid_keys=[],
         block_id=block_label,
         condition_id=condition_name,
-        task_factors={"stage": "iti", "block_idx": block_index},
+        task_factors={
+            "stage": "iti",
+            "block_idx": block_index,
+            "trial_id": trial_id,
+        },
         stim_id="fixation",
     )
-    iti.show(
-        duration=iti_duration,
-        onset_trigger=settings.triggers.get("iti_onset"),
-    ).to_dict(trial_data)
-
-    rt = decision.get_state("rt", None)
-    rt_s = float(rt) if isinstance(rt, (int, float)) else None
+    iti.show(duration=iti_duration, onset_trigger=iti_onset).to_dict(trial_data)
 
     trial_data.update(
         {
@@ -210,7 +227,7 @@ def run_trial(
             "chosen_option": chosen_option,
             "timed_out": bool(timed_out),
             "rt_s": rt_s,
-            "chose_gamble": bool(chose_gamble) if chose_gamble is not None else None,
+            "chose_gamble": chose_gamble,
             "safe_key": safe_key,
             "gamble_key": gamble_key,
             "frame_label": str(offer.get("frame_label", "")),
@@ -225,12 +242,5 @@ def run_trial(
             "gamble_loss": float(offer.get("gamble_loss", 0.0)),
             "gamble_gain_prob": float(offer.get("gamble_gain_prob", 0.0)),
         }
-    )
-
-    controller.record_trial(
-        condition=condition_name,
-        chose_gamble=chose_gamble,
-        rt_s=rt_s,
-        timed_out=bool(timed_out),
     )
     return trial_data

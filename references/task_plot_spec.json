@@ -1,0 +1,553 @@
+{
+  "task_plot_spec": {
+    "spec_version": "0.2",
+    "meta": {
+      "task_name": "Loss Aversion / Framing Task",
+      "mode": "existing",
+      "task_id": ""
+    },
+    "figure": {
+      "output": {
+        "filename": "task_flow.png",
+        "dpi": 300,
+        "width_in": 16.0,
+        "background": "white"
+      },
+      "layout": {
+        "max_conditions": 3,
+        "screens_per_timeline": 6,
+        "screen_overlap_ratio": 0.1,
+        "screen_slope": 0.08,
+        "screen_slope_deg": 25.0,
+        "timeline_gap": 0.18,
+        "screen_aspect_ratio": 1.4545454545454546,
+        "left_margin": 0.2,
+        "right_margin": 0.03,
+        "top_margin": 0.03,
+        "bottom_margin": 0.05,
+        "condition_label_gap": 0.014,
+        "phase_label_pad": 0.01,
+        "duration_label_gap": 0.006,
+        "timeline_arrow_gap": 0.01,
+        "timeline_arrow_screen_clearance": 0.007,
+        "timeline_arrow_text_clearance": 0.01,
+        "timeline_arrow_extra_per_screen": 0.015,
+        "timeline_arrow_min_y": 0.02,
+        "timeline_arrow_max_y": 0.96
+      }
+    },
+    "timelines": [
+      {
+        "condition": "gain_frame",
+        "display_condition_label": "Gain Frame",
+        "phases": [
+          {
+            "phase_name": "fixation",
+            "display_phase_label": "Fixation",
+            "duration_ms": {
+              "fixed": 500
+            },
+            "response_window_ms": null,
+            "display_timing_label": "500 ms",
+            "stim_ids": [
+              "fixation"
+            ],
+            "stimulus_example": {
+              "summary": "+",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "+",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    0.0
+                  ],
+                  "height": 44.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "decision",
+            "display_phase_label": "Decision",
+            "duration_ms": {
+              "fixed": 4000
+            },
+            "response_window_ms": null,
+            "display_timing_label": "4000 ms",
+            "stim_ids": [
+              "frame_label",
+              "scenario_text",
+              "safe_option_text",
+              "gamble_option_text",
+              "key_hint"
+            ],
+            "stimulus_example": {
+              "summary": "收益框架 + 你获得 100 元预算。请选择其一： + 方案A（确定） / 保留 80 元 + 方案B（风险） / 80% 保留 100 元 / 20% 保留 0 元 + 按 F 选方案A（确定） 按 J 选方案B（风险）",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "收益框架",
+                  "color": "#f8f2a5",
+                  "pos": [
+                    0.0,
+                    255.0
+                  ],
+                  "height": 34.0
+                },
+                {
+                  "kind": "text",
+                  "text": "你获得 100 元预算。请选择其一：",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    170.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "方案A（确定） / 保留 80 元",
+                  "color": "#acf2ac",
+                  "pos": [
+                    -320.0,
+                    20.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "方案B（风险） / 80% 保留 100 元 / 20% 保留 0 元",
+                  "color": "#acdfff",
+                  "pos": [
+                    320.0,
+                    20.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "按 F 选方案A（确定）    按 J 选方案B（风险）",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    -220.0
+                  ],
+                  "height": 24.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "feedback",
+            "display_phase_label": "Feedback",
+            "duration_ms": {
+              "fixed": 700
+            },
+            "response_window_ms": null,
+            "display_timing_label": "700 ms",
+            "stim_ids": [
+              "feedback_timeout' if timed_out else 'feedback_choice"
+            ],
+            "stimulus_example": {
+              "summary": "你选择了 方案A（确定）",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "你选择了 方案A（确定）",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    -20.0
+                  ],
+                  "height": 34.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "iti",
+            "display_phase_label": "ITI",
+            "duration_ms": {
+              "fixed": 500
+            },
+            "response_window_ms": null,
+            "display_timing_label": "500 ms",
+            "stim_ids": [
+              "fixation"
+            ],
+            "stimulus_example": {
+              "summary": "+",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "+",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    0.0
+                  ],
+                  "height": 44.0
+                }
+              ]
+            },
+            "notes": ""
+          }
+        ]
+      },
+      {
+        "condition": "loss_frame",
+        "display_condition_label": "Loss Frame",
+        "phases": [
+          {
+            "phase_name": "fixation",
+            "display_phase_label": "Fixation",
+            "duration_ms": {
+              "fixed": 500
+            },
+            "response_window_ms": null,
+            "display_timing_label": "500 ms",
+            "stim_ids": [
+              "fixation"
+            ],
+            "stimulus_example": {
+              "summary": "+",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "+",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    0.0
+                  ],
+                  "height": 44.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "decision",
+            "display_phase_label": "Decision",
+            "duration_ms": {
+              "fixed": 4000
+            },
+            "response_window_ms": null,
+            "display_timing_label": "4000 ms",
+            "stim_ids": [
+              "frame_label",
+              "scenario_text",
+              "safe_option_text",
+              "gamble_option_text",
+              "key_hint"
+            ],
+            "stimulus_example": {
+              "summary": "损失框架 + 你获得 100 元预算。请选择其一： + 方案A（确定） / 损失 20 元 + 方案B（风险） / 80% 损失 0 元 / 20% 损失 100 元 + 按 F 选方案A（确定） 按 J 选方案B（风险）",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "损失框架",
+                  "color": "#f8f2a5",
+                  "pos": [
+                    0.0,
+                    255.0
+                  ],
+                  "height": 34.0
+                },
+                {
+                  "kind": "text",
+                  "text": "你获得 100 元预算。请选择其一：",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    170.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "方案A（确定） / 损失 20 元",
+                  "color": "#acf2ac",
+                  "pos": [
+                    -320.0,
+                    20.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "方案B（风险） / 80% 损失 0 元 / 20% 损失 100 元",
+                  "color": "#acdfff",
+                  "pos": [
+                    320.0,
+                    20.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "按 F 选方案A（确定）    按 J 选方案B（风险）",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    -220.0
+                  ],
+                  "height": 24.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "feedback",
+            "display_phase_label": "Feedback",
+            "duration_ms": {
+              "fixed": 700
+            },
+            "response_window_ms": null,
+            "display_timing_label": "700 ms",
+            "stim_ids": [
+              "feedback_timeout' if timed_out else 'feedback_choice"
+            ],
+            "stimulus_example": {
+              "summary": "你选择了 方案A（确定）",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "你选择了 方案A（确定）",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    -20.0
+                  ],
+                  "height": 34.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "iti",
+            "display_phase_label": "ITI",
+            "duration_ms": {
+              "fixed": 500
+            },
+            "response_window_ms": null,
+            "display_timing_label": "500 ms",
+            "stim_ids": [
+              "fixation"
+            ],
+            "stimulus_example": {
+              "summary": "+",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "+",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    0.0
+                  ],
+                  "height": 44.0
+                }
+              ]
+            },
+            "notes": ""
+          }
+        ]
+      },
+      {
+        "condition": "mixed_frame",
+        "display_condition_label": "Mixed Frame",
+        "phases": [
+          {
+            "phase_name": "fixation",
+            "display_phase_label": "Fixation",
+            "duration_ms": {
+              "fixed": 500
+            },
+            "response_window_ms": null,
+            "display_timing_label": "500 ms",
+            "stim_ids": [
+              "fixation"
+            ],
+            "stimulus_example": {
+              "summary": "+",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "+",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    0.0
+                  ],
+                  "height": 44.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "decision",
+            "display_phase_label": "Decision",
+            "duration_ms": {
+              "fixed": 4000
+            },
+            "response_window_ms": null,
+            "display_timing_label": "4000 ms",
+            "stim_ids": [
+              "frame_label",
+              "scenario_text",
+              "safe_option_text",
+              "gamble_option_text",
+              "key_hint"
+            ],
+            "stimulus_example": {
+              "summary": "混合框架 + 请选择其一： + 方案A（确定） / 获得 0 元 + 方案B（风险） / 50% 获得 40 元 / 50% 损失 30 元 + 按 F 选方案A（确定） 按 J 选方案B（风险）",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "混合框架",
+                  "color": "#f8f2a5",
+                  "pos": [
+                    0.0,
+                    255.0
+                  ],
+                  "height": 34.0
+                },
+                {
+                  "kind": "text",
+                  "text": "请选择其一：",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    170.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "方案A（确定） / 获得 0 元",
+                  "color": "#acf2ac",
+                  "pos": [
+                    -320.0,
+                    20.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "方案B（风险） / 50% 获得 40 元 / 50% 损失 30 元",
+                  "color": "#acdfff",
+                  "pos": [
+                    320.0,
+                    20.0
+                  ],
+                  "height": 30.0
+                },
+                {
+                  "kind": "text",
+                  "text": "按 F 选方案A（确定）    按 J 选方案B（风险）",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    -220.0
+                  ],
+                  "height": 24.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "feedback",
+            "display_phase_label": "Feedback",
+            "duration_ms": {
+              "fixed": 700
+            },
+            "response_window_ms": null,
+            "display_timing_label": "700 ms",
+            "stim_ids": [
+              "feedback_timeout' if timed_out else 'feedback_choice"
+            ],
+            "stimulus_example": {
+              "summary": "你选择了 方案A（确定）",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "你选择了 方案A（确定）",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    -20.0
+                  ],
+                  "height": 34.0
+                }
+              ]
+            },
+            "notes": ""
+          },
+          {
+            "phase_name": "iti",
+            "display_phase_label": "ITI",
+            "duration_ms": {
+              "fixed": 500
+            },
+            "response_window_ms": null,
+            "display_timing_label": "500 ms",
+            "stim_ids": [
+              "fixation"
+            ],
+            "stimulus_example": {
+              "summary": "+",
+              "modality": "visual",
+              "draw_hint": "text",
+              "render_items": [
+                {
+                  "kind": "text",
+                  "text": "+",
+                  "color": "white",
+                  "pos": [
+                    0.0,
+                    0.0
+                  ],
+                  "height": 44.0
+                }
+              ]
+            },
+            "notes": ""
+          }
+        ]
+      }
+    ],
+    "legend": []
+  }
+}
