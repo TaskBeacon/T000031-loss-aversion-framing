@@ -22,6 +22,7 @@ from psyflow import (
 )
 
 from src import run_trial
+from src.utils import normalize_condition, sample_offer
 
 
 def _make_qa_trigger_runtime():
@@ -158,15 +159,30 @@ def _run_impl(*, mode: str, output_dir: Path | None, cfg: dict, participant_id: 
         if mode not in ("qa", "sim"):
             count_down(win, 3, color="black")
 
-        block = (
-            BlockUnit(
-                block_id=f"block_{block_i}",
-                block_idx=block_i,
-                settings=settings,
-                window=win,
-                keyboard=kb,
+        block = BlockUnit(
+            block_id=f"block_{block_i}",
+            block_idx=block_i,
+            settings=settings,
+            window=win,
+            keyboard=kb,
+        ).generate_conditions(weights=settings.resolve_condition_weights())
+        scheduled_conditions = []
+        for trial_index, condition_label in enumerate(list(block.conditions or []), start=1):
+            condition_name = normalize_condition(condition_label)
+            scheduled_conditions.append(
+                {
+                    "condition": condition_name,
+                    "offer": sample_offer(
+                        settings,
+                        condition_name,
+                        block_idx=block_i,
+                        trial_id=trial_index,
+                    ),
+                }
             )
-            .generate_conditions(weights=settings.resolve_condition_weights())
+
+        block = (
+            block.add_condition(scheduled_conditions)
             .on_start(lambda b: trigger_runtime.send(settings.triggers.get("block_onset")))
             .on_end(lambda b: trigger_runtime.send(settings.triggers.get("block_end")))
             .run_trial(

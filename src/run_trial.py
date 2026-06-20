@@ -4,7 +4,7 @@ from typing import Any
 
 from psyflow import StimUnit, next_trial_id, set_trial_context
 
-from .utils import CHOICE_GAMBLE, CHOICE_SAFE, normalize_condition, sample_offer
+from .utils import CHOICE_GAMBLE, CHOICE_SAFE, normalize_condition
 
 
 def _task_dict(settings: Any, attr_name: str) -> dict[str, Any]:
@@ -44,7 +44,10 @@ def run_trial(
 ):
     """Run one framing trial (fixation -> decision -> feedback -> iti)."""
     trial_id = next_trial_id()
-    condition_name = normalize_condition(condition)
+    if not isinstance(condition, dict) or "offer" not in condition:
+        raise ValueError("Framing run_trial requires a scheduled condition dict with an offer.")
+    condition_name = normalize_condition(condition.get("condition"))
+    offer = dict(condition["offer"])
     block_label = str(block_id) if block_id is not None else "block_0"
     block_index = int(block_idx) if block_idx is not None else 0
     trial_per_block = int(getattr(settings, "trials_per_block", getattr(settings, "trial_per_block", 1)) or 1)
@@ -66,7 +69,6 @@ def run_trial(
     feedback_onset = _trigger_code(trigger_map, "feedback_onset", 40)
     iti_onset = _trigger_code(trigger_map, "iti_onset", 50)
 
-    offer = sample_offer(settings, condition_name, block_idx=block_index, trial_id=trial_id)
     fixation_duration = getattr(settings, "fixation_duration", 0.5)
     decision_deadline = getattr(settings, "decision_deadline", 4.0)
     feedback_duration = getattr(settings, "feedback_duration", 0.7)
